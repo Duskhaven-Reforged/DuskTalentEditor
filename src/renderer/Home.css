@@ -1,0 +1,26 @@
+.homediv {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 10px;
+  align-items: center;
+}
+
+.talentSelector {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.specSelector {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: center;
+}
+
+h2:nth-child(3) {
+  margin-top: 50px;
+}

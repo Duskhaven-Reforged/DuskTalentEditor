@@ -1,0 +1,54 @@
+.ReactModal__Overlay {
+  z-index: 5;
+  position: relative;
+}
+
+.TalentModalBG {
+  background: #212121;
+  width: fit-content;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 100vh;
+  overflow-y: scroll;
+}
+
+.TalentAddGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.TalentAdd {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-content: center;
+}
+
+.plusModal {
+  opacity: 0;
+  transition: 300ms;
+}
+
+.modalParent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: 300ms;
+}
+
+.modalParent:hover .plusModal {
+  opacity: 1;
+  cursor: pointer;
+}
+
+.talentModalForm {
+  text-align: center;
+  width: 600px;
+  padding: 10px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
