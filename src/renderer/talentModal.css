@@ -11,7 +11,8 @@
   flex-direction: column;
   align-items: center;
   max-height: 100vh;
-  overflow-y: scroll;
+  overflow-y: hidden;
+  min-height: 95vh;
 }
 
 .TalentAddGrid {

@@ -103,14 +103,14 @@ ipcMain.on('customQuery', (event, query) => {
     custompool.query(query, (error, results) => {
       if (error) {
         console.error('Failed to execute query:', error);
-        event.reply('query', null);
+        event.reply('customQuery', null);
       } else {
-        event.reply('query', results);
+        event.reply('customQuery', results);
       }
     });
   } else {
     console.error('Not connected to the database');
-    event.reply('query', null);
+    event.reply('customQuery', null);
   }
 });
 

@@ -7,7 +7,7 @@ import TalentModal from './TalentModal';
 import { Ranks } from './types/Ranks.type';
 import NavBar from './NavBar';
 import { Spells } from './types/Spells.type';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const TalentEditor = () => {
@@ -19,25 +19,26 @@ const TalentEditor = () => {
   Modal.setAppElement('#root');
 
   async function getSpells() {
+    console.log('GETSPELLS CALLED');
     window.electron.ipcRenderer.sendMessage(
       'customQuery',
       'SELECT id, SpellName0 FROM spell',
     );
   }
 
-  function changeUpdater() {
-    console.log('CHANGE UPDATER CALLED');
-    setUpdater((prev) => !prev);
-  }
-
   useEffect(() => {
     getSpells();
   }, []);
+
+  // useEffect(() => {
+  //   console.log(spells);
+  // }, [spells]);
 
   useEffect(() => {
     window.electron.ipcRenderer.once('customQuery', (event, args) => {
       console.log('CAUGHT SPELLS');
       setSpells(event as Spells);
+      toast('Spells loaded', { toastId: 'spellLoadToast' });
     });
   }, []);
 

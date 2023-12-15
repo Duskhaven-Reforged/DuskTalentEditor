@@ -6,7 +6,7 @@ import RanksModal from './RanksModal';
 import { Ranks } from './types/Ranks.type';
 import { Code, atomOneDark } from 'react-code-blocks';
 import { toast } from 'react-toastify';
-import Select from 'react-select';
+import WindowedSelect from 'react-windowed-select';
 import { Spells } from './types/Spells.type';
 import { IOption } from './types/IOption';
 
@@ -22,6 +22,8 @@ const TalentModal = (props: {
   const [changes, setChanges] = useState<Record<string, number>>({});
   const [selectedOption, setSelectedOption] = useState<IOption>();
   const [options, setOptions] = useState<IOption[]>([]);
+  const [isSpellIdChanged, setIsSpellIdChanged] = useState(false);
+  const [isOtherFieldsBlocked, setIsOtherFieldsBlocked] = useState(false);
 
   useEffect(() => {
     if (props.forgeTalent) {
@@ -39,14 +41,23 @@ const TalentModal = (props: {
         numberRanks: 1,
       };
     }
-
-    if (props.spells) {
-      props.spells.forEach((spell) => {
-        console.log(spell);
-        setOptions([...options, { value: spell.id, label: spell.SpellName0 }]);
-      });
-    }
   }, [props.forgeTalent]);
+
+  useEffect(() => {
+    if (props.spells) {
+      const op = options;
+      props.spells.forEach((spell) => {
+        // setOptions([...options, { value: spell.id, label: spell.SpellName0 }]);
+        op.push({ value: spell.id, label: spell.SpellName0 });
+      });
+
+      setOptions(op);
+    }
+  }, [props.spells]);
+
+  // useEffect(() => {
+  //   console.log(options);
+  // }, [options]);
 
   useEffect(() => {
     handleSql();
@@ -77,7 +88,11 @@ const TalentModal = (props: {
       first = false;
     }
     if (props.forgeTalent) {
-      sql += ` WHERE spellid = ${talent.spellid};`;
+      if (isSpellIdChanged) {
+        sql += ` WHERE row = ${talent.rowIndex} AND column = ${talent.columnIndex};`;
+      } else {
+        sql += ` WHERE spellid = ${talent.spellid};`;
+      }
     } else {
       sql += `;`;
     }
@@ -87,6 +102,15 @@ const TalentModal = (props: {
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.name === 'spellid') {
+      setIsSpellIdChanged(true);
+    }
+    if (
+      event.target.name === 'rowIndex' ||
+      event.target.name === 'columnIndex'
+    ) {
+      setIsOtherFieldsBlocked(true);
+    }
     setTalent({
       ...talent,
       [event.target.name]: event.target.valueAsNumber,
@@ -143,6 +167,7 @@ const TalentModal = (props: {
               name="columnIndex"
               onChange={handleChange}
               value={talent.columnIndex}
+              disabled={isSpellIdChanged}
             />
           </label>
           <label>
@@ -152,6 +177,7 @@ const TalentModal = (props: {
               name="rowIndex"
               onChange={handleChange}
               value={talent.rowIndex}
+              disabled={isSpellIdChanged}
             />
           </label>
           <label>
@@ -228,19 +254,39 @@ const TalentModal = (props: {
           </label>
           <label>
             Spell ID:
-            {/* <Select
+            <WindowedSelect
               defaultValue={selectedOption}
               onChange={(nv, am) => {
-                if (nv) setSelectedOption(nv);
+                if (nv) {
+                  let n = nv as IOption;
+                  setSelectedOption(n);
+                  setTalent({ ...talent, spellid: n.value });
+                }
+              }}
+              styles={{
+                // control: (baseStyles, state) => ({
+                //   ...baseStyles,
+                //   borderColor: state.isFocused ? "grey" : "transparent",
+                //   backgroundColor: "transparent",
+                // }),
+                // @ts-ignore
+                menu: (baseStyles, state) => ({
+                  ...baseStyles,
+                  backgroundColor: 'white',
+                  color: '#212121',
+                  position: 'absolute',
+                }),
               }}
               options={options}
+              windowThreshold={100}
             />{' '}
-            {talent.spellid} */}
+            {talent.spellid}
             <input
               type="number"
               name="spellid"
               onChange={handleChange}
               value={talent.spellid}
+              disabled={isOtherFieldsBlocked}
             />
           </label>
           <Code text={sql} language={`sql`} wrapLongLines theme={atomOneDark} />
