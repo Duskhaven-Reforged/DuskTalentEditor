@@ -1,0 +1,27 @@
+.ruler-vertical {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.ruler-cell-vertical {
+  height: 100px;
+  text-align: center;
+}
+.ruler {
+  display: flex;
+  justify-content: space-between;
+  width: 95%;
+}
+
+.ruler-row {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0px;
+}
+
+.ruler-cell {
+  width: 100px;
+  text-align: center;
+  border: 1px dashed #242424;
+}

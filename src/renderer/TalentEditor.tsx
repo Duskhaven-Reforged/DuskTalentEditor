@@ -1,6 +1,13 @@
 import { useParams } from 'react-router-dom';
 import './TalentEditor.css';
-import { useEffect, useState } from 'react';
+import {
+  JSXElementConstructor,
+  Key,
+  ReactElement,
+  ReactNode,
+  useEffect,
+  useState,
+} from 'react';
 import { ForgeTalent } from './types/Forge_Talent.type';
 import Modal from 'react-modal';
 import TalentModal from './TalentModal';
@@ -9,6 +16,7 @@ import NavBar from './NavBar';
 import { Spells } from './types/Spells.type';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Ruler from './shared/Ruler';
 
 const TalentEditor = () => {
   const { class: className } = useParams();
@@ -90,22 +98,32 @@ const TalentEditor = () => {
         forgeTalent={talent}
         setUpdater={setUpdater}
         spells={spells}
+        row={row}
+        column={column}
       />
     );
+  };
+
+  const generateNumbers = (n: number) => {
+    return Array.from({ length: n }, (_, i) => i);
   };
 
   return (
     <div className="talentWrapper">
       {/* <NavBar /> */}
       <ToastContainer />
+      <div className="ruler-row">
+        <Ruler numbers={generateNumbers(12)} />
+      </div>
       <div className="talentCanvas">
-        {Array.from({ length: 121 }).map((_, index) => {
+        {Array.from({ length: 132 }).map((_, index) => {
           const row = Math.floor(index / 11);
-          const column = index % 11;
+          const column = index % 12;
 
           return (
             <div key={index} className="gridCell">
-              {renderTalent(row, column)}
+              {column === 0 && <div>{row + 1}</div>}
+              {column !== 0 && renderTalent(row + 1, column)}
             </div>
           );
         })}

@@ -14,6 +14,8 @@ const TalentModal = (props: {
   forgeTalent: ForgeTalent | undefined;
   setUpdater: React.Dispatch<React.SetStateAction<boolean>>;
   spells: Spells | undefined;
+  row: number;
+  column: number;
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [talent, setTalent] = useState<ForgeTalent>({} as ForgeTalent);
@@ -42,6 +44,16 @@ const TalentModal = (props: {
       };
     }
   }, [props.forgeTalent]);
+
+  useEffect(() => {
+    if (!props.forgeTalent) {
+      setTalent((prevTalent) => ({
+        ...prevTalent,
+        rowIndex: props.row,
+        columnIndex: props.column,
+      }));
+    }
+  }, [props.row, props.column]);
 
   useEffect(() => {
     if (props.spells) {
@@ -94,7 +106,7 @@ const TalentModal = (props: {
         sql += ` WHERE spellid = ${talent.spellid};`;
       }
     } else {
-      sql += `;`;
+      sql += `WHERE row = ${props.row} AND column = ${props.column};`;
     }
 
     // Set the 'sql' state variable with the constructed SQL query
@@ -167,7 +179,7 @@ const TalentModal = (props: {
               name="columnIndex"
               onChange={handleChange}
               value={talent.columnIndex}
-              disabled={isSpellIdChanged}
+              disabled={true}
             />
           </label>
           <label>
@@ -177,7 +189,7 @@ const TalentModal = (props: {
               name="rowIndex"
               onChange={handleChange}
               value={talent.rowIndex}
-              disabled={isSpellIdChanged}
+              disabled={true}
             />
           </label>
           <label>
