@@ -9,19 +9,25 @@
   text-align: center;
 }
 .ruler {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  gap: 1px;
   justify-content: space-between;
+  width: 100%;
+  font-weight: bold;
+  color: #fff;
+  margin: 0 auto;
+  padding-top: 20px;
   width: 95%;
 }
 
-.ruler-row {
+/* .ruler-row {
   display: flex;
   justify-content: center;
-  margin: 10px 0px;
-}
+  margin: 10px 0px 0px 10px;
+} */
 
 .ruler-cell {
-  width: 100px;
   text-align: center;
-  border: 1px dashed #242424;
+  border: 1px solid #bbbbbb;
 }

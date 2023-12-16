@@ -1,6 +1,7 @@
 import { useParams } from 'react-router-dom';
 import './TalentEditor.css';
 import {
+  DragEvent,
   JSXElementConstructor,
   Key,
   ReactElement,
@@ -17,12 +18,77 @@ import { Spells } from './types/Spells.type';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Ruler from './shared/Ruler';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 const TalentEditor = () => {
   const { class: className } = useParams();
   const [talents, setTalents] = useState<ForgeTalent[]>([]);
   const [spells, setSpells] = useState<Spells>();
   const [updater, setUpdater] = useState(false);
+
+  const handleDragStart = (
+    event: { dataTransfer: { setData: (arg0: string, arg1: string) => void } },
+    row: any,
+    column: any,
+  ) => {
+    event.dataTransfer.setData('text/plain', `${row},${column}`);
+  };
+
+  const handleDragOver = (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+  };
+
+  const handleDrop = (
+    event: DragEvent<HTMLDivElement>,
+    row: string | number,
+    column: string | number,
+  ) => {
+    event.preventDefault();
+    const data = event.dataTransfer.getData('text/plain').split(',');
+    const draggedRow = Number(data[0]) + 1;
+    const draggedColumn = Number(data[1]);
+
+    if (typeof row == 'number' && typeof column == 'number') {
+      if (findTalent(row + 1, column + 1)) {
+        console.log('FAILED');
+      } else {
+        const t = findTalent(draggedRow, draggedColumn);
+        console.log('Spell ID: ' + t!.spellid);
+        console.log('Row: ' + row);
+        console.log('Column: ' + column);
+        if (t) {
+          dragSpell(t, { row: row + 1, column: column });
+        }
+      }
+    }
+  };
+
+  function dragSpell(
+    talent: ForgeTalent,
+    target: { row: number; column: number },
+  ) {
+    window.electron.ipcRenderer.sendMessage(
+      'updateQuery',
+      `UPDATE forge_talents SET rowIndex=${target.row}, columnIndex=${target.column} WHERE spellid=${talent.spellid};`,
+    );
+  }
+
+  useEffect(() => {
+    const handleUpdateQuery = (event: any, args: any) => {
+      console.log('Spell Drag updated');
+      setUpdater((prev) => !prev);
+    };
+
+    window.electron.ipcRenderer.on('updateQuery', handleUpdateQuery);
+
+    // Cleanup function
+    return () => {
+      window.electron.ipcRenderer.removeListener(
+        'updateQuery',
+        handleUpdateQuery,
+      );
+    };
+  }, []);
 
   Modal.setAppElement('#root');
 
@@ -113,20 +179,34 @@ const TalentEditor = () => {
       {/* <NavBar /> */}
       <ToastContainer />
       <div className="ruler-row">
-        <Ruler numbers={generateNumbers(12)} />
+        <Ruler numbers={generateNumbers(11)} />
       </div>
-      <div className="talentCanvas">
-        {Array.from({ length: 132 }).map((_, index) => {
-          const row = Math.floor(index / 11);
-          const column = index % 12;
+      <div className="canvasWrapper">
+        <div className="verticalRuler">
+          {Array.from({ length: 11 }).map((_, index) => {
+            return <div>{index + 1}</div>;
+          })}
+        </div>
+        <div className="talentCanvas">
+          {Array.from({ length: 121 }).map((_, index) => {
+            const row = Math.floor(index / 11) + 1;
+            const column = (index % 11) + 1;
 
-          return (
-            <div key={index} className="gridCell">
-              {column === 0 && <div>{row + 1}</div>}
-              {column !== 0 && renderTalent(row + 1, column)}
-            </div>
-          );
-        })}
+            return (
+              <div
+                key={index}
+                draggable
+                onDragStart={(event) => handleDragStart(event, row, column)}
+                onDragOver={handleDragOver}
+                onDrop={(event) => handleDrop(event, row, column)}
+                className="gridCell"
+              >
+                {/* {column === 0 && <div>{row}</div>} */}
+                {renderTalent(row, column)}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

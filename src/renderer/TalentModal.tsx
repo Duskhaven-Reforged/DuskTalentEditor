@@ -67,6 +67,15 @@ const TalentModal = (props: {
     }
   }, [props.spells]);
 
+  useEffect(() => {
+    if (selectedOption?.value) {
+      setChanges((prevChanges) => ({
+        ...prevChanges,
+        ['spellid']: selectedOption?.value,
+      }));
+    }
+  }, [selectedOption]);
+
   // useEffect(() => {
   //   console.log(options);
   // }, [options]);
@@ -90,23 +99,30 @@ const TalentModal = (props: {
     // Construct the SQL query
     let sql = props.forgeTalent
       ? `UPDATE forge_talents SET `
-      : `INSERT INTO forge_talents VALUES `;
+      : `INSERT INTO forge_talents (`;
+
     let first = true;
     for (const key in changes) {
       if (!first) {
         sql += ', ';
       }
-      sql += `${key} = ${changes[key]}`;
+      sql += `${key}`;
       first = false;
     }
+
     if (props.forgeTalent) {
-      if (isSpellIdChanged) {
-        sql += ` WHERE row = ${talent.rowIndex} AND column = ${talent.columnIndex};`;
-      } else {
-        sql += ` WHERE spellid = ${talent.spellid};`;
-      }
+      sql += ` WHERE spellid = ${talent.spellid};`;
     } else {
-      sql += `WHERE row = ${props.row} AND column = ${props.column};`;
+      sql += `, rowIndex, columnIndex) VALUES (`;
+      first = true;
+      for (const key in changes) {
+        if (!first) {
+          sql += ', ';
+        }
+        sql += `${changes[key]}`;
+        first = false;
+      }
+      sql += `, ${props.row}, ${props.column});`;
     }
 
     // Set the 'sql' state variable with the constructed SQL query

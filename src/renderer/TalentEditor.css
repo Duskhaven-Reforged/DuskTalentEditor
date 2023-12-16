@@ -2,10 +2,11 @@
   width: 95%;
   height: 90%;
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  grid-template-rows: repeat(12, 1fr);
-  gap: 1px;
-  padding: 0 20px;
+  grid-template-columns: repeat(11, 1fr);
+  grid-template-rows: repeat(11, 1fr);
+  gap: 0px;
+  row-gap: 0px;
+  padding: 0 20px 0 0;
   margin: 0 auto;
 }
 
@@ -17,7 +18,29 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  border: 1px dashed #242424;
+  border: 1px solid #bbbbbb;
+  height: 50px;
+}
+
+.canvasWrapper {
+  height: 98%;
+  display: flex;
+}
+
+.verticalRuler {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  div {
+    height: 50px;
+    border: 1px solid #bbbbbb;
+    /* width: 20px; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: right;
+  }
 }
 
 #root {
