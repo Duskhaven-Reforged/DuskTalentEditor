@@ -12,6 +12,27 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin: 0;
+}
+
+.titleBar {
+  width: 100%;
+  background: #111111;
+  margin-bottom: 0px;
+  -webkit-app-region: drag;
+  height: 30px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  h1 {
+    font-family: 'Poppins';
+    padding: 0 0 0 20px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #fff;
+  }
 }
 
 button {

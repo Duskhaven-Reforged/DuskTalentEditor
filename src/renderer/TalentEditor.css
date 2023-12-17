@@ -11,7 +11,7 @@
 }
 
 .talentWrapper {
-  height: 98%;
+  height: 94%;
 }
 
 .gridCell {
@@ -30,7 +30,8 @@
 .verticalRuler {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  height: 90%;
 
   div {
     height: 50px;
