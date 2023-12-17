@@ -37,11 +37,13 @@ const images = {
 
 function NavBar() {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const [selectedValues, setSelectedValues] = useState<string[] | null>([]);
+  const [selectedValues, setSelectedValues] = useState<
+    { specID: string; name: string }[] | null
+  >([]);
   const classMap = new Map(
     classLists.map((classList) => [
       classList.class,
-      classList.specs.map((spec) => spec.specID),
+      classList.specs.map((spec) => ({ specID: spec.specID, name: spec.name })),
     ]),
   );
   const navigate = useNavigate();
@@ -54,10 +56,9 @@ function NavBar() {
       setSelectedValues(classMap.get(key) || []);
     }
   };
-
-  const handleValueClick = (value: string): void => {
+  const handleValueClick = (value: { specID: string; name: string }): void => {
     console.log('NAVIGATE VALUE CLICK');
-    navigate(`/talentEditor/${value}`);
+    navigate(`/talentEditor/${value.name}`);
   };
 
   return (
@@ -74,11 +75,11 @@ function NavBar() {
               {selectedValues &&
                 selectedValues.map((value) => (
                   <button
-                    key={value}
+                    key={value.specID}
                     className="navbar-sub-item"
                     onClick={() => handleValueClick(value)}
                   >
-                    {value}
+                    {value.name}
                   </button>
                 ))}
             </div>
