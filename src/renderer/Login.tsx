@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import './Login.css';
+import SamSulek from '../../assets/load.gif';
 
 const Login = ({
   setIsConnected,
@@ -49,33 +51,46 @@ const Login = ({
   }, []);
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        value={host}
-        onChange={(e) => setHost(e.target.value)}
-        placeholder="Host"
-      />
-      <input
-        type="text"
-        value={user}
-        onChange={(e) => setUser(e.target.value)}
-        placeholder="User"
-      />
-      <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Password"
-      />
-      <input
-        type="text"
-        value={port}
-        onChange={(e) => setPort(e.target.value)}
-        placeholder="Port"
-      />
-      <button type="submit">Submit</button>
-    </form>
+    <div
+      className="loginWrapper"
+      style={{ backgroundImage: `url(${SamSulek})` }}
+    >
+      <form onSubmit={handleSubmit} className="loginForm">
+        <label>Host:</label>
+        <input
+          type="text"
+          value={host}
+          onChange={(e) => setHost(e.target.value)}
+          placeholder="Host"
+        />
+
+        <label>User:</label>
+        <input
+          type="text"
+          value={user}
+          onChange={(e) => setUser(e.target.value)}
+          placeholder="User"
+        />
+
+        <label>Password:</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+        />
+
+        <label>Port:</label>
+        <input
+          type="text"
+          value={port}
+          onChange={(e) => setPort(e.target.value)}
+          placeholder="Port"
+        />
+
+        <button type="submit">Submit</button>
+      </form>
+    </div>
   );
 };
 

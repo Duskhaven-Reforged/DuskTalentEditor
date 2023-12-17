@@ -45,19 +45,26 @@ const TalentEditor = () => {
   ) => {
     event.preventDefault();
     const data = event.dataTransfer.getData('text/plain').split(',');
-    const draggedRow = Number(data[0]) + 1;
+    const draggedRow = Number(data[0]);
     const draggedColumn = Number(data[1]);
 
     if (typeof row == 'number' && typeof column == 'number') {
-      if (findTalent(row + 1, column + 1)) {
+      if (findTalent(row, column)) {
         console.log('FAILED');
       } else {
         const t = findTalent(draggedRow, draggedColumn);
-        console.log('Spell ID: ' + t!.spellid);
+        console.log(
+          'Spell ID: ' +
+            t!.spellid +
+            ' row: ' +
+            draggedRow +
+            'column: ' +
+            draggedColumn,
+        );
         console.log('Row: ' + row);
         console.log('Column: ' + column);
         if (t) {
-          dragSpell(t, { row: row + 1, column: column });
+          dragSpell(t, { row: row, column: column });
         }
       }
     }

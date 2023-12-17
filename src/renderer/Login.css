@@ -1,0 +1,29 @@
+.loginWrapper {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: overlay;
+  background-color: rgba(0, 0, 0, 0.87); /* 50% opacity */
+
+  form {
+    display: flex;
+    flex-direction: column;
+    height: 40%;
+    width: 60%;
+    background: #232323;
+    justify-content: space-around;
+    padding: 20px 30px;
+    border: 1px solid #f8f8f825;
+    border-radius: 10px;
+    align-items: center;
+
+    input {
+      border-radius: 5px;
+    }
+  }
+}
