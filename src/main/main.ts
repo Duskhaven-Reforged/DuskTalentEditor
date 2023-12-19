@@ -16,6 +16,10 @@ import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 import mysql from 'mysql2';
 import { Pool } from 'mysql2/typings/mysql/lib/Pool';
+import {
+  installExtension,
+  REACT_DEVELOPER_TOOLS,
+} from 'electron-extension-installer';
 
 class AppUpdater {
   constructor() {
@@ -36,7 +40,6 @@ ipcMain.on('ipc-example', async (event, arg) => {
 });
 
 ipcMain.on('connect', (event, config) => {
-  console.log('Received config:', config); // Add this line
   pool = mysql.createPool({
     ...config,
     database: 'acore_world',
@@ -114,6 +117,22 @@ ipcMain.on('endQuery', (event, query) => {
   }
 });
 
+ipcMain.on('ranksQuery', (event, query) => {
+  if (pool) {
+    pool.query(query, (error, results) => {
+      if (error) {
+        console.error('Failed to execute query:', error);
+        event.reply('ranksQuery', null);
+      } else {
+        event.reply('ranksQuery', results);
+      }
+    });
+  } else {
+    console.error('Not connected to the database');
+    event.reply('ranksQuery', null);
+  }
+});
+
 ipcMain.on('customQuery', (event, query) => {
   if (custompool) {
     custompool.query(query, (error, results) => {
@@ -127,6 +146,22 @@ ipcMain.on('customQuery', (event, query) => {
   } else {
     console.error('Not connected to the database');
     event.reply('customQuery', null);
+  }
+});
+
+ipcMain.on('preReqQuery', (event, query) => {
+  if (custompool) {
+    custompool.query(query, (error, results) => {
+      if (error) {
+        console.error('Failed to execute query:', error);
+        event.reply('preReqQuery', null);
+      } else {
+        event.reply('preReqQuery', results);
+      }
+    });
+  } else {
+    console.error('Not connected to the database');
+    event.reply('preReqQuery', null);
   }
 });
 
@@ -156,9 +191,9 @@ const installExtensions = async () => {
 };
 
 const createWindow = async () => {
-  if (isDebug) {
-    await installExtensions();
-  }
+  // if (isDebug) {
+  //   await installExtensions();
+  // }
 
   const RESOURCES_PATH = app.isPackaged
     ? './assets'
@@ -231,7 +266,12 @@ app.on('window-all-closed', () => {
 
 app
   .whenReady()
-  .then(() => {
+  .then(async () => {
+    await installExtension(REACT_DEVELOPER_TOOLS, {
+      loadExtensionOptions: {
+        allowFileAccess: true,
+      },
+    });
     createWindow();
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the

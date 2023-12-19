@@ -58,7 +58,7 @@ const Login = ({
       <form onSubmit={handleSubmit} className="loginForm">
         <label>Host:</label>
         <input
-          type="text"
+          type="password"
           value={host}
           onChange={(e) => setHost(e.target.value)}
           placeholder="Host"
@@ -66,7 +66,7 @@ const Login = ({
 
         <label>User:</label>
         <input
-          type="text"
+          type="password"
           value={user}
           onChange={(e) => setUser(e.target.value)}
           placeholder="User"
@@ -82,7 +82,7 @@ const Login = ({
 
         <label>Port:</label>
         <input
-          type="text"
+          type="password"
           value={port}
           onChange={(e) => setPort(e.target.value)}
           placeholder="Port"

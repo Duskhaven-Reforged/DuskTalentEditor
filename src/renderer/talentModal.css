@@ -13,6 +13,9 @@
   max-height: 100vh;
   overflow-y: hidden;
   min-height: 95vh;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid #f8f8f825;
 }
 
 .TalentAddGrid {

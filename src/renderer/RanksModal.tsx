@@ -4,23 +4,52 @@ import './talentModal.css';
 import { Ranks } from './types/Ranks.type';
 import { Code } from 'react-code-blocks';
 import { toast } from 'react-toastify';
+import { DBRanks } from './types/DB_Ranks.type';
 
 const RanksModal = (props: {
   ranks: Ranks;
   setRanks: (ranks: Ranks) => void;
   setUpdater: React.Dispatch<React.SetStateAction<boolean>>;
+  originalspellID: number;
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [ranks, setRanks] = useState<Ranks>(props.ranks);
   const [sql, setSql] = useState<string[]>([]);
+  const [dbRanks, setDbRanks] = useState<DBRanks[]>([]);
 
   const handleSql = () => {
     let sqlQueries = [];
     for (let i = 0; i < ranks.numberRanks; i++) {
-      let sql = `INSERT INTO forge_talent_ranks VALUES `;
-      sql += `(${ranks.talentSpellid[0]}, ${ranks.talentTabid}, ${i + 1}, ${
-        ranks.talentSpellid[i]
-      })`;
+      let sql;
+      if (dbRanks.length === 0) {
+        // If dbRanks is empty, use INSERT
+        sql = `INSERT INTO forge_talent_ranks (talentSpellId, talentTabId, rank, spellId) VALUES `;
+      } else if (dbRanks.length === 1) {
+        // If dbRanks has one item, use UPDATE for the first query and INSERT for the second
+        sql =
+          i === 0
+            ? `UPDATE forge_talent_ranks SET talentSpellId = ${
+                ranks.talentSpellid[0]
+              }, talentTabId = ${ranks.talentTabid}, rank = ${
+                i + 1
+              }, spellId = ${ranks.talentSpellid[i]} WHERE talentSpellId = ${
+                props.originalspellID
+              }`
+            : `INSERT INTO forge_talent_ranks (talentSpellId, talentTabId, rank, spellId) VALUES (${
+                ranks.talentSpellid[0]
+              }, ${ranks.talentTabid}, ${i + 1}, ${ranks.talentSpellid[i]})`;
+      } else {
+        // If dbRanks has two items, use UPDATE for both queries
+        sql = `UPDATE forge_talent_ranks SET talentSpellId = ${
+          ranks.talentSpellid[0]
+        }, talentTabId = ${ranks.talentTabid}, rank = ${i + 1}, spellId = ${
+          ranks.talentSpellid[i]
+        }`;
+
+        i === 0
+          ? (sql += ` WHERE talentSpellId = ${props.originalspellID}`)
+          : (sql += ` WHERE talentSpellId = ${ranks.talentSpellid[0]}`);
+      }
       sql += ';';
       sqlQueries.push(sql);
     }
@@ -28,7 +57,31 @@ const RanksModal = (props: {
   };
 
   useEffect(() => {
-    setRanks(props.ranks);
+    handleSql();
+  }, [dbRanks]);
+
+  useEffect(() => {
+    const handleGetRanks = (event: any, args: any) => {
+      console.log('Ranks Caught');
+      const dbRanks: DBRanks[] = event;
+      console.log(dbRanks);
+      // console.log(dbRanks[1].spellId);
+      let r: Ranks = ranks;
+      r.talentSpellid[0] = dbRanks[0].talentSpellId;
+      if (dbRanks.length == 2) {
+        r.talentSpellid[1] = dbRanks[1].spellId;
+      }
+      console.log(r);
+      setRanks(r);
+      setDbRanks(dbRanks);
+    };
+
+    window.electron.ipcRenderer.once('ranksQuery', handleGetRanks);
+
+    // Cleanup function
+    return () => {
+      window.electron.ipcRenderer.removeListener('ranksQuery', handleGetRanks);
+    };
   }, []);
 
   const openModal = () => {
@@ -40,8 +93,15 @@ const RanksModal = (props: {
   };
 
   useEffect(() => {
-    handleSql();
     console.log(ranks);
+    if (ranks.talentSpellid) {
+      window.electron.ipcRenderer.sendMessage(
+        'ranksQuery',
+        `SELECT * FROM forge_talent_ranks WHERE talentSpellId = ${props.originalspellID}`,
+      );
+      handleSql();
+      console.log(ranks);
+    }
   }, [ranks]);
 
   const handleChange = (
@@ -62,10 +122,11 @@ const RanksModal = (props: {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    // TODO: Handle form submission
-    sql.forEach((v) => {
-      window.electron.ipcRenderer.sendMessage('endQuery', v);
-    });
+    // sql.forEach((v) => {
+    //   window.electron.ipcRenderer.sendMessage('endQuery', v);
+    // });
+    window.electron.ipcRenderer.sendMessage('endQuery', sql[1]);
+
     props.setUpdater((prev) => !prev);
   };
 

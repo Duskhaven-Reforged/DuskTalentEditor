@@ -58,7 +58,7 @@ function NavBar() {
   };
   const handleValueClick = (value: { specID: string; name: string }): void => {
     console.log('NAVIGATE VALUE CLICK');
-    navigate(`/talentEditor/${value.name}`);
+    navigate(`/talentEditor/${value.specID}`);
   };
 
   return (

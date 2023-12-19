@@ -126,6 +126,7 @@ const TalentEditor = () => {
   useEffect(() => {
     refreshTalents();
     loadTalents();
+    console.log(className);
   }, [className]);
 
   function loadTalents() {
@@ -203,8 +204,16 @@ const TalentEditor = () => {
               <div
                 key={index}
                 draggable
-                onDragStart={(event) => handleDragStart(event, row, column)}
-                onDragOver={handleDragOver}
+                onDragStart={
+                  findTalent(row, column) === undefined
+                    ? (event) => {}
+                    : (event) => handleDragStart(event, row, column)
+                }
+                onDragOver={
+                  findTalent(row, column) === undefined
+                    ? (event) => {}
+                    : handleDragOver
+                }
                 onDrop={(event) => handleDrop(event, row, column)}
                 className="gridCell"
               >

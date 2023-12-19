@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import WindowedSelect from 'react-windowed-select';
 import { Spells } from './types/Spells.type';
 import { IOption } from './types/IOption';
+import { useParams } from 'react-router-dom';
 
 const TalentModal = (props: {
   forgeTalent: ForgeTalent | undefined;
@@ -26,6 +27,7 @@ const TalentModal = (props: {
   const [options, setOptions] = useState<IOption[]>([]);
   const [isSpellIdChanged, setIsSpellIdChanged] = useState(false);
   const [isOtherFieldsBlocked, setIsOtherFieldsBlocked] = useState(false);
+  const { class: className } = useParams();
 
   useEffect(() => {
     if (props.forgeTalent) {
@@ -106,7 +108,7 @@ const TalentModal = (props: {
       if (!first) {
         sql += ', ';
       }
-      sql += `${key}`;
+      sql += `${key} = ${changes[key]}`;
       first = false;
     }
 
@@ -185,7 +187,7 @@ const TalentModal = (props: {
               type="number"
               name="talentTabId"
               onChange={handleChange}
-              value={talent.talentTabId}
+              value={parseInt(className!)}
             />
           </label>
           <label>
@@ -247,6 +249,7 @@ const TalentModal = (props: {
               ranks={ranks}
               setRanks={setRanks}
               setUpdater={props.setUpdater}
+              originalspellID={talent.spellid}
             />
           </label>
           <label>
