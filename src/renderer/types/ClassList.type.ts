@@ -24,6 +24,10 @@ export const classLists: ClassList[] = [
         name: 'protection',
         specID: '3',
       },
+      {
+        name: 'general',
+        specID: '33',
+      },
     ],
   },
   {
@@ -40,6 +44,10 @@ export const classLists: ClassList[] = [
       {
         name: 'retribution',
         specID: '6',
+      },
+      {
+        name: 'general',
+        specID: '34',
       },
     ],
   },
@@ -58,6 +66,10 @@ export const classLists: ClassList[] = [
         name: 'survival',
         specID: '9',
       },
+      {
+        name: 'general',
+        specID: '35',
+      },
     ],
   },
   {
@@ -74,6 +86,10 @@ export const classLists: ClassList[] = [
       {
         name: 'subtlety',
         specID: '12',
+      },
+      {
+        name: 'general',
+        specID: '36',
       },
     ],
   },
@@ -92,6 +108,10 @@ export const classLists: ClassList[] = [
         name: 'shadow',
         specID: '15',
       },
+      {
+        name: 'general',
+        specID: '37',
+      },
     ],
   },
   {
@@ -108,6 +128,10 @@ export const classLists: ClassList[] = [
       {
         name: 'unholy',
         specID: '18',
+      },
+      {
+        name: 'general',
+        specID: '38',
       },
     ],
   },
@@ -130,6 +154,10 @@ export const classLists: ClassList[] = [
         name: 'stonewarden',
         specID: '32',
       },
+      {
+        name: 'general',
+        specID: '39',
+      },
     ],
   },
   {
@@ -147,6 +175,10 @@ export const classLists: ClassList[] = [
         name: 'frost',
         specID: '24',
       },
+      {
+        name: 'general',
+        specID: '40',
+      },
     ],
   },
   {
@@ -163,6 +195,10 @@ export const classLists: ClassList[] = [
       {
         name: 'destruction',
         specID: '27',
+      },
+      {
+        name: 'general',
+        specID: '41',
       },
     ],
   },
@@ -184,6 +220,10 @@ export const classLists: ClassList[] = [
       {
         name: 'guardian',
         specID: '31',
+      },
+      {
+        name: 'general',
+        specID: '42',
       },
     ],
   },
