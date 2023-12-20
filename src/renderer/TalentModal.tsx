@@ -10,11 +10,12 @@ import WindowedSelect from 'react-windowed-select';
 import { Spells } from './types/Spells.type';
 import { IOption } from './types/IOption';
 import { useParams } from 'react-router-dom';
+import PreReqModal from './PreReqModal';
+import ChoiceNodeModal from './ChoiceNodeModal';
 
 const TalentModal = (props: {
   forgeTalent: ForgeTalent | undefined;
   setUpdater: React.Dispatch<React.SetStateAction<boolean>>;
-  spells: Spells | undefined;
   row: number;
   column: number;
 }) => {
@@ -23,8 +24,6 @@ const TalentModal = (props: {
   const [ranks, setRanks] = useState<Ranks>({} as Ranks);
   const [sql, setSql] = useState<string>('');
   const [changes, setChanges] = useState<Record<string, number>>({});
-  const [selectedOption, setSelectedOption] = useState<IOption>();
-  const [options, setOptions] = useState<IOption[]>([]);
   const [isSpellIdChanged, setIsSpellIdChanged] = useState(false);
   const [isOtherFieldsBlocked, setIsOtherFieldsBlocked] = useState(false);
   const { class: className } = useParams();
@@ -57,27 +56,6 @@ const TalentModal = (props: {
     }
   }, [props.row, props.column]);
 
-  useEffect(() => {
-    if (props.spells) {
-      const op = options;
-      props.spells.forEach((spell) => {
-        // setOptions([...options, { value: spell.id, label: spell.SpellName0 }]);
-        op.push({ value: spell.id, label: spell.SpellName0 });
-      });
-
-      setOptions(op);
-    }
-  }, [props.spells]);
-
-  useEffect(() => {
-    if (selectedOption?.value) {
-      setChanges((prevChanges) => ({
-        ...prevChanges,
-        ['spellid']: selectedOption?.value,
-      }));
-    }
-  }, [selectedOption]);
-
   // useEffect(() => {
   //   console.log(options);
   // }, [options]);
@@ -98,36 +76,38 @@ const TalentModal = (props: {
   };
 
   const handleSql = () => {
-    // Construct the SQL query
     let sql = props.forgeTalent
       ? `UPDATE forge_talents SET `
       : `INSERT INTO forge_talents (`;
 
     let first = true;
+    let columns = '';
+    let values = '';
     for (const key in changes) {
       if (!first) {
-        sql += ', ';
+        columns += ', ';
+        values += ', ';
       }
-      sql += `${key} = ${changes[key]}`;
+      columns += `${key}`;
+      if (props.forgeTalent) {
+        columns += ` = ${changes[key]}`;
+      } else {
+        values += `${changes[key]}`;
+      }
+
       first = false;
     }
 
     if (props.forgeTalent) {
-      sql += ` WHERE spellid = ${talent.spellid};`;
+      sql += columns + ` WHERE spellid = ${props.forgeTalent.spellid};`;
     } else {
-      sql += `, rowIndex, columnIndex) VALUES (`;
-      first = true;
-      for (const key in changes) {
-        if (!first) {
-          sql += ', ';
-        }
-        sql += `${changes[key]}`;
-        first = false;
-      }
-      sql += `, ${props.row}, ${props.column});`;
+      sql +=
+        columns +
+        `, rowIndex, columnIndex, talentTabId) VALUES (` +
+        values +
+        `, ${props.row}, ${props.column}, ${className});`;
     }
 
-    // Set the 'sql' state variable with the constructed SQL query
     setSql(sql);
   };
 
@@ -165,9 +145,8 @@ const TalentModal = (props: {
       // console.log(event);
       if (typeof event !== 'string') {
         toast('Executed Successfully', { toastId: 'successToast' });
-        // props.loadTalents();
-
-        // props.setUpdater(!props.updater);
+        props.setUpdater((prev) => !prev);
+        closeModal();
       }
     });
   });
@@ -285,33 +264,6 @@ const TalentModal = (props: {
           </label>
           <label>
             Spell ID:
-            <WindowedSelect
-              defaultValue={selectedOption}
-              onChange={(nv, am) => {
-                if (nv) {
-                  let n = nv as IOption;
-                  setSelectedOption(n);
-                  setTalent({ ...talent, spellid: n.value });
-                }
-              }}
-              styles={{
-                // control: (baseStyles, state) => ({
-                //   ...baseStyles,
-                //   borderColor: state.isFocused ? "grey" : "transparent",
-                //   backgroundColor: "transparent",
-                // }),
-                // @ts-ignore
-                menu: (baseStyles, state) => ({
-                  ...baseStyles,
-                  backgroundColor: 'white',
-                  color: '#212121',
-                  position: 'absolute',
-                }),
-              }}
-              options={options}
-              windowThreshold={100}
-            />{' '}
-            {talent.spellid}
             <input
               type="number"
               name="spellid"
@@ -320,6 +272,11 @@ const TalentModal = (props: {
               disabled={isOtherFieldsBlocked}
             />
           </label>
+          <PreReqModal spellid={talent.spellid} setUpdater={props.setUpdater} />
+          <ChoiceNodeModal
+            choiceNodeId={talent.spellid}
+            setUpdater={props.setUpdater}
+          />
           <Code text={sql} language={`sql`} wrapLongLines theme={atomOneDark} />
           <button type="submit">Submit</button>
         </form>

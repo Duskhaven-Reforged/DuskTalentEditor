@@ -4,15 +4,18 @@ import { preReqTalents } from './types/forge_talent_prereq.type';
 import './PreReqModal.css';
 import { Code } from 'react-code-blocks';
 import { toast } from 'react-toastify';
+import { choiceNode } from './types/ChoiceNode.type';
+import { useParams } from 'react-router-dom';
 
-const PreReqModal = (props: {
-  spellid: number;
+const ChoiceNodeModal = (props: {
+  choiceNodeId: number;
   setUpdater: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [preReq, setPreReq] = useState<preReqTalents[]>([]);
-  const [dbReq, setDbReq] = useState<preReqTalents[]>([]);
+  const [choiceNodes, setChoiceNodes] = useState<choiceNode[]>([]);
+  const [dbChoiceNodes, setDbChoiceNodes] = useState<choiceNode[]>([]);
   const [sqlQueries, setSqlQueries] = useState<string[]>([]);
+  const { class: className } = useParams();
 
   const openModal = () => {
     setModalIsOpen(true);
@@ -21,47 +24,46 @@ const PreReqModal = (props: {
     setModalIsOpen(false);
   };
 
-  const handleAddPreReq = (
+  const handleAddChoiceNode = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-    reqId: number,
+    choiceSpellId: number,
   ) => {
-    const dbReqItem = dbReq.find((item) => item.reqId === reqId);
-    const newPreReqItem = dbReqItem || {
-      reqId: reqId,
-      spellid: props.spellid,
-      talentTabId: 0,
-      reqTalent: 0,
-      reqTalentTabId: 0,
-      reqRank: 0,
+    const dbReqItem = dbChoiceNodes.find(
+      (item) => item.choiceSpellId === choiceSpellId,
+    );
+    const newChoice = dbReqItem || {
+      choiceNodeId: props.choiceNodeId,
+      choiceSpellId: 0,
+      talentTabId: parseInt(className!),
     };
-    setPreReq([...preReq, newPreReqItem]);
+    setChoiceNodes([...choiceNodes, newChoice]);
   };
 
-  const handleDeletePreReq = (
+  const handleDeleteChoiceNode = (
     index: number,
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
   ) => {
-    const newPreReq = [...preReq];
-    newPreReq.splice(index, 1);
-    setPreReq(newPreReq);
-    if (dbReq[index]) {
+    const newChoice = [...choiceNodes];
+    newChoice.splice(index, 1);
+    setChoiceNodes(newChoice);
+    if (dbChoiceNodes[index]) {
       sqlQueries.push(
-        `DELETE FROM forge_talent_prereq WHERE reqId = ${dbReq[index].reqId};`,
+        `DELETE FROM forge_talent_choices WHERE choiceSpellId = ${dbChoiceNodes[index].choiceSpellId};`,
       );
       setSqlQueries([...sqlQueries]);
     }
   };
 
   useEffect(() => {
-    console.log(preReq);
-  }, [preReq]);
+    console.log(choiceNodes);
+  }, [choiceNodes]);
 
   useEffect(() => {
     const handleGetPreReq = (event: any, args: any) => {
       const reqs: preReqTalents[] = event;
       if (reqs) {
-        setPreReq(JSON.parse(JSON.stringify(reqs)));
-        setDbReq(JSON.parse(JSON.stringify(reqs)));
+        setChoiceNodes(JSON.parse(JSON.stringify(reqs)));
+        setDbChoiceNodes(JSON.parse(JSON.stringify(reqs)));
       }
     };
 
@@ -78,33 +80,32 @@ const PreReqModal = (props: {
 
   const generateSqlQueries = () => {
     let sqlQueries: string[] = [];
-    console.log(dbReq);
-    preReq.forEach((preReqItem, index) => {
+    choiceNodes.forEach((choiceItem, index) => {
       let sqlQuery = '';
-      if (dbReq[index]) {
-        const updatedFields = Object.keys(preReqItem).filter(
+      if (dbChoiceNodes[index]) {
+        const updatedFields = Object.keys(choiceItem).filter(
           (key) =>
-            preReqItem[key as keyof preReqTalents] !==
-            dbReq[index][key as keyof preReqTalents],
+            choiceItem[key as keyof choiceNode] !==
+            dbChoiceNodes[index][key as keyof choiceNode],
         );
         if (updatedFields.length > 0) {
           const updateClause = updatedFields
-            .map((key) => `${key} = ${preReqItem[key as keyof preReqTalents]}`)
+            .map((key) => `${key} = ${choiceItem[key as keyof choiceNode]}`)
             .join(', ');
-          sqlQuery = `UPDATE forge_talent_prereq SET ${updateClause} WHERE reqId = ${dbReq[index].reqId};`;
+          sqlQuery = `UPDATE forge_talent_choice_nodes SET ${updateClause} WHERE choiceSpellId = ${dbChoiceNodes[index].choiceSpellId};`;
         }
       } else {
-        sqlQuery = `INSERT INTO forge_talent_prereq (reqId, spellId, talentTabId, reqTalent, reqTalentTabId, reqRank) VALUES (${preReqItem.reqId}, ${preReqItem.spellid}, ${preReqItem.talentTabId}, ${preReqItem.reqTalent}, ${preReqItem.reqTalentTabId}, ${preReqItem.reqRank});`;
+        sqlQuery = `INSERT INTO forge_talent_choice_nodes (choiceNodeId, talentTabId, choiceSpellId) VALUES (${choiceItem.choiceNodeId}, ${choiceItem.talentTabId}, ${choiceItem.choiceSpellId});`;
       }
       if (sqlQuery) {
         sqlQueries.push(sqlQuery);
       }
     });
     // Add DELETE queries for items that are in dbReq but not in preReq
-    dbReq.forEach((dbReqItem, index) => {
-      if (!preReq[index]) {
+    dbChoiceNodes.forEach((dbChoiceItem, index) => {
+      if (!choiceNodes[index]) {
         sqlQueries.push(
-          `DELETE FROM forge_talent_prereq WHERE reqId = ${dbReqItem.reqId};`,
+          `DELETE FROM forge_talent_choice_node WHERE choiceSpellId = ${dbChoiceItem.choiceSpellId};`,
         );
       }
     });
@@ -113,17 +114,17 @@ const PreReqModal = (props: {
 
   useEffect(() => {
     generateSqlQueries();
-  }, [preReq, dbReq]);
+  }, [choiceNodes, dbChoiceNodes]);
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     index: number,
-    field: keyof preReqTalents,
+    field: keyof choiceNode,
   ) => {
-    let newPreReq = [...preReq];
-    newPreReq[index][field] = event.target.valueAsNumber;
+    let newChoiceNodes = [...choiceNodes];
+    newChoiceNodes[index][field] = event.target.valueAsNumber;
 
-    setPreReq(newPreReq);
+    setChoiceNodes(newChoiceNodes);
   };
 
   useEffect(() => {});
@@ -131,9 +132,9 @@ const PreReqModal = (props: {
   useEffect(() => {
     window.electron.ipcRenderer.sendMessage(
       'preReqQuery',
-      `SELECT * FROM forge_talent_prereq WHERE spellid = ${props.spellid}`,
+      `SELECT * FROM forge_talent_choice_nodes WHERE choiceNodeId = ${props.choiceNodeId}`,
     );
-  }, [props.spellid]);
+  }, [props.choiceNodeId]);
 
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -176,26 +177,18 @@ const PreReqModal = (props: {
         className={'TalentModalBG'}
       >
         <form onSubmit={handleSubmit} className="preReqWrap">
-          {preReq.map((_, index) => {
+          {choiceNodes.map((_, index) => {
             return (
               <div key={index} className="preReqForm">
                 <label>
-                  reqId:
+                  choiceNodeId:
                   <input
                     type="number"
-                    name="reqId"
-                    onChange={(event) => handleChange(event, index, 'reqId')}
+                    name="choiceNodeId"
+                    onChange={(event) =>
+                      handleChange(event, index, 'choiceNodeId')
+                    }
                     value={index + 1}
-                    disabled={true}
-                  />
-                </label>
-                <label>
-                  spellId:
-                  <input
-                    type="number"
-                    name="spellId"
-                    onChange={(event) => handleChange(event, index, 'spellid')}
-                    value={props.spellid}
                     disabled={true}
                   />
                 </label>
@@ -207,45 +200,26 @@ const PreReqModal = (props: {
                     onChange={(event) =>
                       handleChange(event, index, 'talentTabId')
                     }
-                    value={preReq[index].talentTabId}
+                    disabled={true}
+                    value={className}
                   />
                 </label>
                 <label>
-                  reqTalent:
+                  choiceSpellId:
                   <input
                     type="number"
-                    name="reqTalent"
+                    name="choiceSpellId"
                     onChange={(event) =>
-                      handleChange(event, index, 'reqTalent')
+                      handleChange(event, index, 'choiceSpellId')
                     }
-                    value={preReq[index].reqTalent}
-                  />
-                </label>
-                <label>
-                  reqTalentTabId:
-                  <input
-                    type="number"
-                    name="reqTalentTabId"
-                    onChange={(event) =>
-                      handleChange(event, index, 'reqTalentTabId')
-                    }
-                    value={preReq[index].reqTalentTabId}
-                  />
-                </label>
-                <label>
-                  reqRank:
-                  <input
-                    type="number"
-                    name="reqRank"
-                    onChange={(event) => handleChange(event, index, 'reqRank')}
-                    value={preReq[index].reqRank}
+                    value={choiceNodes[index].choiceSpellId}
                   />
                 </label>
                 <button
                   type="button"
-                  onClick={(event) => handleDeletePreReq(index, event)}
+                  onClick={(event) => handleDeleteChoiceNode(index, event)}
                 >
-                  Delete Pre Req
+                  Delete Choice Node
                 </button>
               </div>
             );
@@ -257,18 +231,20 @@ const PreReqModal = (props: {
           </div>
           <button
             type="button"
-            onClick={(event) => handleAddPreReq(event, preReq.length + 1)}
+            onClick={(event) =>
+              handleAddChoiceNode(event, choiceNodes.length + 1)
+            }
           >
-            Add PreReq
+            Add Choice Node
           </button>
           <button type="button" onClick={handleSubmit}>
             Submit
           </button>
         </form>
       </Modal>
-      <div onClick={openModal}>Set Pre Requisite Talents</div>
+      <div onClick={openModal}>Set Choice Nodes</div>
     </div>
   );
 };
 
-export default PreReqModal;
+export default ChoiceNodeModal;

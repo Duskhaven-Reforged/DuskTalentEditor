@@ -1,6 +1,6 @@
 export interface preReqTalents {
   reqId: number;
-  spellId: number;
+  spellid: number;
   talentTabId: number;
   reqTalent: number;
   reqTalentTabId: number;

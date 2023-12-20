@@ -23,7 +23,6 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 const TalentEditor = () => {
   const { class: className } = useParams();
   const [talents, setTalents] = useState<ForgeTalent[]>([]);
-  const [spells, setSpells] = useState<Spells>();
   const [updater, setUpdater] = useState(false);
 
   const handleDragStart = (
@@ -99,29 +98,9 @@ const TalentEditor = () => {
 
   Modal.setAppElement('#root');
 
-  async function getSpells() {
-    console.log('GETSPELLS CALLED');
-    window.electron.ipcRenderer.sendMessage(
-      'customQuery',
-      'SELECT id, SpellName0 FROM spell',
-    );
-  }
-
-  useEffect(() => {
-    getSpells();
-  }, []);
-
   // useEffect(() => {
   //   console.log(spells);
   // }, [spells]);
-
-  useEffect(() => {
-    window.electron.ipcRenderer.once('customQuery', (event, args) => {
-      console.log('CAUGHT SPELLS');
-      setSpells(event as Spells);
-      toast('Spells loaded', { toastId: 'spellLoadToast' });
-    });
-  }, []);
 
   useEffect(() => {
     refreshTalents();
@@ -171,7 +150,6 @@ const TalentEditor = () => {
       <TalentModal
         forgeTalent={talent}
         setUpdater={setUpdater}
-        spells={spells}
         row={row}
         column={column}
       />

@@ -122,10 +122,10 @@ const RanksModal = (props: {
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    // sql.forEach((v) => {
-    //   window.electron.ipcRenderer.sendMessage('endQuery', v);
-    // });
-    window.electron.ipcRenderer.sendMessage('endQuery', sql[1]);
+    sql.forEach((v) => {
+      window.electron.ipcRenderer.sendMessage('endQuery', v);
+    });
+    // window.electron.ipcRenderer.sendMessage('endQuery', sql[1]);
 
     props.setUpdater((prev) => !prev);
   };

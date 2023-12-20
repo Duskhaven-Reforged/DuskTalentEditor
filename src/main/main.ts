@@ -31,7 +31,7 @@ class AppUpdater {
 
 let mainWindow: BrowserWindow | null = null;
 let pool: Pool | null = null;
-let custompool: Pool | null = null;
+// let custompool: Pool | null = null;
 
 ipcMain.on('ipc-example', async (event, arg) => {
   const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
@@ -51,20 +51,7 @@ ipcMain.on('connect', (event, config) => {
       event.reply('connect', false);
     } else {
       console.log('CONNECTED');
-      custompool = mysql.createPool({
-        ...config,
-        database: 'customspells',
-      });
-      custompool.getConnection((error2, connection2) => {
-        if (error2) {
-          console.error('Failed to connect to database: ', error);
-          event.reply('connect', false);
-        } else {
-          event.reply('connect', true);
-          connection.release();
-          connection2.release();
-        }
-      });
+      event.reply('connect', true);
     }
   });
 });
@@ -133,25 +120,9 @@ ipcMain.on('ranksQuery', (event, query) => {
   }
 });
 
-ipcMain.on('customQuery', (event, query) => {
-  if (custompool) {
-    custompool.query(query, (error, results) => {
-      if (error) {
-        console.error('Failed to execute query:', error);
-        event.reply('customQuery', null);
-      } else {
-        event.reply('customQuery', results);
-      }
-    });
-  } else {
-    console.error('Not connected to the database');
-    event.reply('customQuery', null);
-  }
-});
-
 ipcMain.on('preReqQuery', (event, query) => {
-  if (custompool) {
-    custompool.query(query, (error, results) => {
+  if (pool) {
+    pool.query(query, (error, results) => {
       if (error) {
         console.error('Failed to execute query:', error);
         event.reply('preReqQuery', null);
@@ -162,6 +133,22 @@ ipcMain.on('preReqQuery', (event, query) => {
   } else {
     console.error('Not connected to the database');
     event.reply('preReqQuery', null);
+  }
+});
+
+ipcMain.on('preReqEndQuery', (event, query) => {
+  if (pool) {
+    pool.query(query, (error, results) => {
+      if (error) {
+        console.error('Failed to execute query:', error);
+        event.reply('preReqEndQuery', null);
+      } else {
+        event.reply('preReqEndQuery', results);
+      }
+    });
+  } else {
+    console.error('Not connected to the database');
+    event.reply('preReqEndQuery', null);
   }
 });
 
