@@ -30,4 +30,5 @@
 .ruler-cell {
   text-align: center;
   border: 1px solid #bbbbbb;
+  border-radius: 5px;
 }

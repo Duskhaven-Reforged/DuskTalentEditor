@@ -18,7 +18,9 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  border: 1px solid #bbbbbb;
+  border: 1px solid #ffffff29;
+  border-radius: 5px;
+  background: #24242438;
   height: 50px;
 }
 
@@ -32,10 +34,12 @@
   flex-direction: column;
   gap: 4px;
   height: 90%;
+  font-weight: bold;
 
   div {
     height: 50px;
     border: 1px solid #bbbbbb;
+    border-radius: 5px;
     /* width: 20px; */
     display: flex;
     flex-direction: column;

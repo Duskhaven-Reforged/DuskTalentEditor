@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import { preReqTalents } from './types/forge_talent_prereq.type';
 import './PreReqModal.css';
-import { Code } from 'react-code-blocks';
+import { Code, atomOneDark } from 'react-code-blocks';
 import { toast } from 'react-toastify';
 
 const PreReqModal = (props: {
@@ -252,7 +252,13 @@ const PreReqModal = (props: {
           })}
           <div className="codeBlocks">
             {Array.from({ length: sqlQueries.length }).map((_, index) => {
-              return <Code text={sqlQueries[index]} language="sql" />;
+              return (
+                <Code
+                  text={sqlQueries[index]}
+                  language="sql"
+                  theme={atomOneDark}
+                />
+              );
             })}
           </div>
           <button
@@ -266,7 +272,9 @@ const PreReqModal = (props: {
           </button>
         </form>
       </Modal>
-      <div onClick={openModal}>Set Pre Requisite Talents</div>
+      <div onClick={openModal} className="innerModalPop">
+        Set Pre Requisite Talents
+      </div>
     </div>
   );
 };

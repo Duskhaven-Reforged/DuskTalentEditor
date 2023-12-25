@@ -55,4 +55,48 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+
+  label {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  input {
+    background: #303030;
+    border: 1px solid #ffffff29;
+    border-radius: 5px;
+    color: #fff;
+  }
+
+  button {
+    background: #303030;
+    border: 1px solid #ffffff29;
+    border-radius: 5px;
+    color: #fff;
+    transition: 300ms;
+    font-weight: bold;
+    font-family: 'Poppins';
+    font-size: 18px;
+
+    &:hover {
+      background: #424242;
+      transform: scale(1);
+    }
+  }
+}
+
+.innerModalPop {
+  background: #303030;
+  border: 1px solid #ffffff29;
+  padding: 2px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 300ms;
+
+  &:hover {
+    background: #424242;
+  }
 }

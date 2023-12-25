@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import './talentModal.css';
 import { Ranks } from './types/Ranks.type';
-import { Code } from 'react-code-blocks';
+import { Code, atomOneDark } from 'react-code-blocks';
 import { toast } from 'react-toastify';
 import { DBRanks } from './types/DB_Ranks.type';
 
@@ -165,12 +165,16 @@ const RanksModal = (props: {
             );
           })}
           {Array.from({ length: sql.length }).map((_, index) => {
-            return <Code text={sql[index]} language="sql" />;
+            return (
+              <Code text={sql[index]} language="sql" theme={atomOneDark} />
+            );
           })}
           <button type="submit">Submit</button>
         </form>
       </Modal>
-      <div onClick={openModal}>Set Ranks</div>
+      <div onClick={openModal} className="innerModalPop">
+        Set Ranks
+      </div>
     </div>
   );
 };

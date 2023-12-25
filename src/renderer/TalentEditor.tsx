@@ -181,17 +181,9 @@ const TalentEditor = () => {
             return (
               <div
                 key={index}
-                draggable
-                onDragStart={
-                  findTalent(row, column) === undefined
-                    ? (event) => {}
-                    : (event) => handleDragStart(event, row, column)
-                }
-                onDragOver={
-                  findTalent(row, column) === undefined
-                    ? (event) => {}
-                    : handleDragOver
-                }
+                draggable={findTalent(row, column) !== undefined}
+                onDragStart={(event) => handleDragStart(event, row, column)}
+                onDragOver={handleDragOver}
                 onDrop={(event) => handleDrop(event, row, column)}
                 className="gridCell"
               >

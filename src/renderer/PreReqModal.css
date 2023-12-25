@@ -6,6 +6,37 @@
   flex-direction: column;
   gap: 10px;
   align-items: center;
+
+  label {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+  }
+
+  input {
+    background: #303030;
+    border: 1px solid #ffffff29;
+    border-radius: 5px;
+    color: #fff;
+  }
+
+  button {
+    background: #303030;
+    border: 1px solid #ffffff29;
+    border-radius: 5px;
+    color: #fff;
+    transition: 300ms;
+    font-weight: bold;
+    font-family: 'Poppins';
+    font-size: 18px;
+
+    &:hover {
+      background: #424242;
+      transform: scale(1);
+    }
+  }
 }
 
 .preReqWrap {
@@ -15,7 +46,17 @@
   align-items: center;
 
   button {
+    background: #303030;
+    border: 1px solid #ffffff29;
+    border-radius: 5px;
+    color: #fff;
+    transition: 300ms;
+    font-weight: bold;
+    font-family: 'Poppins';
+    font-size: 18px;
+
     &:hover {
+      background: #424242;
       transform: scale(1);
     }
   }
