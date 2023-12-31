@@ -120,6 +120,22 @@ ipcMain.on('ranksQuery', (event, query) => {
   }
 });
 
+ipcMain.on('ranksEndQuery', (event, query) => {
+  if (pool) {
+    pool.query(query, (error, results) => {
+      if (error) {
+        console.error('Failed to execute query:', error);
+        event.reply('ranksEndQuery', null);
+      } else {
+        event.reply('ranksEndQuery', results);
+      }
+    });
+  } else {
+    console.error('Not connected to the database');
+    event.reply('ranksEndQuery', null);
+  }
+});
+
 ipcMain.on('preReqQuery', (event, query) => {
   if (pool) {
     pool.query(query, (error, results) => {

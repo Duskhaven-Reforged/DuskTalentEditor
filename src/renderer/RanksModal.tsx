@@ -1,79 +1,69 @@
 import { useEffect, useState } from 'react';
 import Modal from 'react-modal';
-import './talentModal.css';
-import { Ranks } from './types/Ranks.type';
+import { preReqTalents } from './types/forge_talent_prereq.type';
+import './PreReqModal.css';
 import { Code, atomOneDark } from 'react-code-blocks';
 import { toast } from 'react-toastify';
 import { DBRanks } from './types/DB_Ranks.type';
+import { useParams } from 'react-router-dom';
 
 const RanksModal = (props: {
-  ranks: Ranks;
-  setRanks: (ranks: Ranks) => void;
+  spellid: number;
   setUpdater: React.Dispatch<React.SetStateAction<boolean>>;
-  originalspellID: number;
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [ranks, setRanks] = useState<Ranks>(props.ranks);
-  const [sql, setSql] = useState<string[]>([]);
-  const [dbRanks, setDbRanks] = useState<DBRanks[]>([]);
+  const [rank, setRank] = useState<DBRanks[]>([]);
+  const [dbRank, setDbRank] = useState<DBRanks[]>([]);
+  const [sqlQueries, setSqlQueries] = useState<string[]>([]);
+  const { class: className } = useParams();
 
-  const handleSql = () => {
-    let sqlQueries = [];
-    for (let i = 0; i < ranks.numberRanks; i++) {
-      let sql;
-      if (dbRanks.length === 0) {
-        // If dbRanks is empty, use INSERT
-        sql = `INSERT INTO forge_talent_ranks (talentSpellId, talentTabId, rank, spellId) VALUES `;
-      } else if (dbRanks.length === 1) {
-        // If dbRanks has one item, use UPDATE for the first query and INSERT for the second
-        sql =
-          i === 0
-            ? `UPDATE forge_talent_ranks SET talentSpellId = ${
-                ranks.talentSpellid[0]
-              }, talentTabId = ${ranks.talentTabid}, rank = ${
-                i + 1
-              }, spellId = ${ranks.talentSpellid[i]} WHERE talentSpellId = ${
-                props.originalspellID
-              }`
-            : `INSERT INTO forge_talent_ranks (talentSpellId, talentTabId, rank, spellId) VALUES (${
-                ranks.talentSpellid[0]
-              }, ${ranks.talentTabid}, ${i + 1}, ${ranks.talentSpellid[i]})`;
-      } else {
-        // If dbRanks has two items, use UPDATE for both queries
-        sql = `UPDATE forge_talent_ranks SET talentSpellId = ${
-          ranks.talentSpellid[0]
-        }, talentTabId = ${ranks.talentTabid}, rank = ${i + 1}, spellId = ${
-          ranks.talentSpellid[i]
-        }`;
+  const openModal = () => {
+    setModalIsOpen(true);
+  };
+  const closeModal = () => {
+    setModalIsOpen(false);
+  };
 
-        i === 0
-          ? (sql += ` WHERE talentSpellId = ${props.originalspellID}`)
-          : (sql += ` WHERE talentSpellId = ${ranks.talentSpellid[0]}`);
-      }
-      sql += ';';
-      sqlQueries.push(sql);
+  const handleAddRank = (
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+    rankNumber: number,
+  ) => {
+    const dbRankItem = dbRank.find((item) => item.rank === rankNumber);
+    const newPreReqItem = dbRankItem || {
+      talentSpellId: props.spellid,
+      talentTabId: parseInt(className!),
+      rank: rankNumber,
+      spellId: 0,
+    };
+    setRank([...rank, newPreReqItem]);
+  };
+
+  const handleDeleteRank = (
+    index: number,
+    event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
+  ) => {
+    const newRank = [...rank];
+    newRank.splice(index, 1);
+    setRank(newRank);
+    if (dbRank[index]) {
+      sqlQueries.push(
+        `DELETE FROM forge_talent_ranks WHERE spellid = ${dbRank[index].spellId};`,
+      );
+      setSqlQueries([...sqlQueries]);
     }
-    setSql(sqlQueries);
   };
 
   useEffect(() => {
-    handleSql();
-  }, [dbRanks]);
+    console.log(rank);
+  }, [rank]);
 
   useEffect(() => {
     const handleGetRanks = (event: any, args: any) => {
-      console.log('Ranks Caught');
-      const dbRanks: DBRanks[] = event;
-      console.log(dbRanks);
-      // console.log(dbRanks[1].spellId);
-      let r: Ranks = ranks;
-      r.talentSpellid[0] = dbRanks[0].talentSpellId;
-      if (dbRanks.length == 2) {
-        r.talentSpellid[1] = dbRanks[1].spellId;
+      const reqs: preReqTalents[] = event;
+      if (reqs) {
+        setRank(JSON.parse(JSON.stringify(reqs)));
+        setDbRank(JSON.parse(JSON.stringify(reqs)));
       }
-      console.log(r);
-      setRanks(r);
-      setDbRanks(dbRanks);
     };
 
     window.electron.ipcRenderer.once('ranksQuery', handleGetRanks);
@@ -84,92 +74,181 @@ const RanksModal = (props: {
     };
   }, []);
 
-  const openModal = () => {
-    console.log('NO OF RANKS + ' + ranks.numberRanks);
-    setModalIsOpen(true);
-  };
-  const closeModal = () => {
-    setModalIsOpen(false);
+  const generateSqlQueries = () => {
+    let sqlQueries: string[] = [];
+    console.log(dbRank);
+    rank.forEach((rankItem, index) => {
+      let sqlQuery = '';
+      if (dbRank[index]) {
+        const updatedFields = Object.keys(rankItem).filter(
+          (key) =>
+            rankItem[key as keyof DBRanks] !==
+            dbRank[index][key as keyof DBRanks],
+        );
+        if (updatedFields.length > 0) {
+          const updateClause = updatedFields
+            .map((key) => `${key} = ${rankItem[key as keyof DBRanks]}`)
+            .join(', ');
+          sqlQuery = `UPDATE forge_talent_ranks SET ${updateClause} WHERE spellid = ${dbRank[index].spellId};`;
+        }
+      } else {
+        sqlQuery = `INSERT INTO forge_talent_ranks (talentSpellId, talentTabId, rank, spellid) VALUES (${rankItem.talentSpellId}, ${rankItem.talentTabId}, ${rankItem.rank}, ${rankItem.spellId});`;
+      }
+      if (sqlQuery) {
+        sqlQueries.push(sqlQuery);
+      }
+    });
+    // Add DELETE queries for items that are in dbRank but not in rank
+    dbRank.forEach((dbRankItem, index) => {
+      if (!rank[index]) {
+        sqlQueries.push(
+          `DELETE FROM forge_talent_prereq WHERE rank = ${dbRankItem.rank};`,
+        );
+      }
+    });
+    setSqlQueries(sqlQueries);
   };
 
   useEffect(() => {
-    console.log(ranks);
-    if (ranks.talentSpellid) {
-      window.electron.ipcRenderer.sendMessage(
-        'ranksQuery',
-        `SELECT * FROM forge_talent_ranks WHERE talentSpellId = ${props.originalspellID}`,
-      );
-      handleSql();
-      console.log(ranks);
-    }
-  }, [ranks]);
+    generateSqlQueries();
+  }, [rank, dbRank]);
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     index: number,
+    field: keyof DBRanks,
   ) => {
-    // Create a new array with the updated value
-    let newTalentSpellid: number[] = ranks.talentSpellid;
-    newTalentSpellid[index] = event.target.valueAsNumber;
+    let newRank = [...rank];
+    newRank[index][field] = event.target.valueAsNumber;
 
-    // Update the ranks object with the new talentSpellid array
-    setRanks({
-      ...ranks,
-      talentSpellid: newTalentSpellid,
-    });
-    handleSql();
+    setRank(newRank);
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    sql.forEach((v) => {
-      window.electron.ipcRenderer.sendMessage('endQuery', v);
-    });
-    // window.electron.ipcRenderer.sendMessage('endQuery', sql[1]);
-
-    props.setUpdater((prev) => !prev);
-  };
+  useEffect(() => {});
 
   useEffect(() => {
-    window.electron.ipcRenderer.once('endQuery', (event, args) => {
-      // console.log(event);
+    window.electron.ipcRenderer.sendMessage(
+      'ranksQuery',
+      `SELECT * FROM forge_talent_ranks WHERE talentSpellId = ${props.spellid}`,
+    );
+  }, [props.spellid]);
+
+  function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
+
+    sqlQueries.forEach((sql) => {
+      window.electron.ipcRenderer.sendMessage('ranksQuery', sql);
+    });
+  }
+
+  useEffect(() => {
+    const handleEndQuery = (event: any, args: any) => {
+      console.log(event);
       if (typeof event !== 'string') {
         toast('Executed Successfully', { toastId: 'successToast' });
         // props.loadTalents();
 
-        // props.setUpdater(!props.updater);
+        props.setUpdater((prev) => !prev);
+        closeModal();
+      } else {
+        toast(event, { toastId: 'successToast' });
       }
-    });
-  });
+    };
+
+    window.electron.ipcRenderer.once('ranksEndQuery', handleEndQuery);
+
+    return () => {
+      window.electron.ipcRenderer.removeListener(
+        'ranksEndQuery',
+        handleEndQuery,
+      );
+    };
+  }, []);
 
   return (
     <div className="talentWrapper">
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
-        contentLabel="Talent Modal"
+        contentLabel="PreReq Modal"
         className={'TalentModalBG'}
       >
-        <form onSubmit={handleSubmit} className="talentModalForm">
-          {Array.from({ length: ranks.numberRanks }).map((_, index) => {
+        <form onSubmit={handleSubmit} className="preReqWrap">
+          {rank.map((_, index) => {
             return (
-              <label>
-                Talent Spell ID:
-                <input
-                  type="number"
-                  name="talentSpellid"
-                  onChange={(event) => handleChange(event, index)}
-                  value={ranks.talentSpellid?.[index]}
+              <div key={index} className="preReqForm">
+                <label>
+                  Rank:
+                  <input
+                    type="number"
+                    name="rank"
+                    onChange={(event) => handleChange(event, index, 'rank')}
+                    value={index + 1}
+                    disabled={true}
+                  />
+                </label>
+                <label>
+                  Talent Spell ID:
+                  <input
+                    type="number"
+                    name="talentSpellId"
+                    onChange={(event) =>
+                      handleChange(event, index, 'talentSpellId')
+                    }
+                    value={props.spellid}
+                    disabled={true}
+                  />
+                </label>
+                <label>
+                  talentTabId:
+                  <input
+                    type="number"
+                    name="talentTabId"
+                    onChange={(event) =>
+                      handleChange(event, index, 'talentTabId')
+                    }
+                    value={rank[index].talentTabId}
+                  />
+                </label>
+                <label>
+                  Spell ID:
+                  <input
+                    type="number"
+                    name="reqTalent"
+                    onChange={(event) => handleChange(event, index, 'spellId')}
+                    value={rank[index].spellId}
+                  />
+                </label>
+
+                <button
+                  type="button"
+                  onClick={(event) => handleDeleteRank(index, event)}
+                >
+                  Delete Rank
+                </button>
+              </div>
+            );
+          })}
+          <div className="codeBlocks">
+            {Array.from({ length: sqlQueries.length }).map((_, index) => {
+              return (
+                <Code
+                  text={sqlQueries[index]}
+                  language="sql"
+                  theme={atomOneDark}
                 />
-              </label>
-            );
-          })}
-          {Array.from({ length: sql.length }).map((_, index) => {
-            return (
-              <Code text={sql[index]} language="sql" theme={atomOneDark} />
-            );
-          })}
-          <button type="submit">Submit</button>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            onClick={(event) => handleAddRank(event, rank.length + 1)}
+          >
+            Add Rank
+          </button>
+          <button type="button" onClick={handleSubmit}>
+            Submit
+          </button>
         </form>
       </Modal>
       <div onClick={openModal} className="innerModalPop">

@@ -225,10 +225,8 @@ const TalentModal = (props: {
               value={talent.numberRanks}
             />
             <RanksModal
-              ranks={ranks}
-              setRanks={setRanks}
+              spellid={talent.spellid}
               setUpdater={props.setUpdater}
-              originalspellID={talent.spellid}
             />
           </label>
           <label>
