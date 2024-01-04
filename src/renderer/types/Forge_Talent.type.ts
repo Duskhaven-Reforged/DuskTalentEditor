@@ -9,6 +9,12 @@ export interface ForgeTalent {
   preReqType: number;
   tabPointReq: number;
   nodeType: number;
-  nodeIndex: null;
+  nodeindex: number;
   spellid: number;
 }
+
+export const nodeTypes = [
+  { value: 0, label: 'Passive' },
+  { value: 1, label: 'Active' },
+  { value: 2, label: 'Choice Node' },
+];

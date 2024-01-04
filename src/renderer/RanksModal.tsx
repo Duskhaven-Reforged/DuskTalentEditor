@@ -208,6 +208,7 @@ const RanksModal = (props: {
                       handleChange(event, index, 'talentTabId')
                     }
                     value={rank[index].talentTabId}
+                    disabled={true}
                   />
                 </label>
                 <label>

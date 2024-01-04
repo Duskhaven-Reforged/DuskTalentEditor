@@ -13,19 +13,19 @@ export const classLists: ClassList[] = [
     class: 'warrior',
     specs: [
       {
-        name: 'arms',
+        name: 'Arms',
         specID: '1',
       },
       {
-        name: 'fury',
+        name: 'Fury',
         specID: '2',
       },
       {
-        name: 'protection',
+        name: 'Protection',
         specID: '3',
       },
       {
-        name: 'general',
+        name: 'General Tree',
         specID: '33',
       },
     ],
@@ -34,19 +34,19 @@ export const classLists: ClassList[] = [
     class: 'paladin',
     specs: [
       {
-        name: 'holy',
+        name: 'Holy',
         specID: '4',
       },
       {
-        name: 'protection',
+        name: 'Protection',
         specID: '5',
       },
       {
-        name: 'retribution',
+        name: 'Retribution',
         specID: '6',
       },
       {
-        name: 'general',
+        name: 'General Tree',
         specID: '34',
       },
     ],
@@ -55,19 +55,19 @@ export const classLists: ClassList[] = [
     class: 'hunter',
     specs: [
       {
-        name: 'beastmastery',
+        name: 'Beast Mastery',
         specID: '7',
       },
       {
-        name: 'marksmanship',
+        name: 'Marksmanship',
         specID: '8',
       },
       {
-        name: 'survival',
+        name: 'Survival',
         specID: '9',
       },
       {
-        name: 'general',
+        name: 'General Tree',
         specID: '35',
       },
     ],
@@ -76,19 +76,19 @@ export const classLists: ClassList[] = [
     class: 'rogue',
     specs: [
       {
-        name: 'assassination',
+        name: 'Assassination',
         specID: '10',
       },
       {
-        name: 'combat',
+        name: 'Combat',
         specID: '11',
       },
       {
-        name: 'subtlety',
+        name: 'Subtlety',
         specID: '12',
       },
       {
-        name: 'general',
+        name: 'General Tree',
         specID: '36',
       },
     ],
@@ -97,19 +97,19 @@ export const classLists: ClassList[] = [
     class: 'priest',
     specs: [
       {
-        name: 'holy',
+        name: 'Holy',
         specID: '13',
       },
       {
-        name: 'discipline',
+        name: 'Discipline',
         specID: '14',
       },
       {
-        name: 'shadow',
+        name: 'Shadow',
         specID: '15',
       },
       {
-        name: 'general',
+        name: 'General Tree',
         specID: '37',
       },
     ],
@@ -118,19 +118,19 @@ export const classLists: ClassList[] = [
     class: 'deathknight',
     specs: [
       {
-        name: 'blood',
+        name: 'Blood',
         specID: '16',
       },
       {
-        name: 'frost',
+        name: 'Frost',
         specID: '17',
       },
       {
-        name: 'unholy',
+        name: 'Unholy',
         specID: '18',
       },
       {
-        name: 'general',
+        name: 'General Tree',
         specID: '38',
       },
     ],
@@ -139,23 +139,23 @@ export const classLists: ClassList[] = [
     class: 'shaman',
     specs: [
       {
-        name: 'elemental',
+        name: 'Elemental',
         specID: '19',
       },
       {
-        name: 'enhancement',
+        name: 'Enhancement',
         specID: '20',
       },
       {
-        name: 'restoration',
+        name: 'Restoration',
         specID: '21',
       },
       {
-        name: 'stonewarden',
+        name: 'Stonewarden',
         specID: '32',
       },
       {
-        name: 'general',
+        name: 'General',
         specID: '39',
       },
     ],
@@ -164,19 +164,19 @@ export const classLists: ClassList[] = [
     class: 'mage',
     specs: [
       {
-        name: 'arcane',
+        name: 'Arcane',
         specID: '22',
       },
       {
-        name: 'fire',
+        name: 'Fire',
         specID: '23',
       },
       {
-        name: 'frost',
+        name: 'Frost',
         specID: '24',
       },
       {
-        name: 'general',
+        name: 'General Tree',
         specID: '40',
       },
     ],
@@ -185,19 +185,19 @@ export const classLists: ClassList[] = [
     class: 'warlock',
     specs: [
       {
-        name: 'affliction',
+        name: 'Affliction',
         specID: '25',
       },
       {
-        name: 'demonology',
+        name: 'Demonology',
         specID: '26',
       },
       {
-        name: 'destruction',
+        name: 'Destruction',
         specID: '27',
       },
       {
-        name: 'general',
+        name: 'General Tree',
         specID: '41',
       },
     ],
@@ -206,23 +206,23 @@ export const classLists: ClassList[] = [
     class: 'druid',
     specs: [
       {
-        name: 'balance',
+        name: 'Balance',
         specID: '28',
       },
       {
-        name: 'feral',
+        name: 'Feral',
         specID: '29',
       },
       {
-        name: 'restoration',
+        name: 'Restoration',
         specID: '30',
       },
       {
-        name: 'guardian',
+        name: 'Guardian',
         specID: '31',
       },
       {
-        name: 'general',
+        name: 'General Tree',
         specID: '42',
       },
     ],

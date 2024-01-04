@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ForgeTalent } from './types/Forge_Talent.type';
+import { ForgeTalent, nodeTypes } from './types/Forge_Talent.type';
 import Modal from 'react-modal';
 import './talentModal.css';
 import RanksModal from './RanksModal';
@@ -56,6 +56,17 @@ const TalentModal = (props: {
     }
   }, [props.row, props.column]);
 
+  useEffect(() => {
+    if (props.forgeTalent) {
+      setTalent({
+        ...props.forgeTalent,
+        nodeType: props.forgeTalent.nodeType ?? 0,
+      });
+    }
+  }, [props.forgeTalent]);
+
+
+
   // useEffect(() => {
   //   console.log(options);
   // }, [options]);
@@ -98,44 +109,61 @@ const TalentModal = (props: {
       first = false;
     }
 
+
     if (props.forgeTalent) {
-      sql += columns + ` WHERE spellid = ${props.forgeTalent.spellid};`;
+      sql += `UPDATE forge_talents SET ` + columns + ` WHERE spellid = ${props.forgeTalent.spellid};`;
     } else {
+      // Calculate nodeTypeValue to ensure it's not undefined
+      const nodeTypeValue = talent.nodeType !== undefined ? talent.nodeType : 0; // default value
+
+      // Construct the INSERT SQL query using nodeTypeValue
       sql +=
+        `INSERT INTO forge_talents (` +
         columns +
-        `, rowIndex, columnIndex, talentTabId) VALUES (` +
+        `, rowIndex, columnIndex, talentTabId, nodeType) VALUES (` +
         values +
-        `, ${props.row}, ${props.column}, ${className});`;
+        `, ${props.row}, ${props.column}, ${className}, ${nodeTypeValue});`;
     }
+
+    // Use the sql variable for further operations
+
+
 
     setSql(sql);
   };
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.name === 'spellid') {
-      setIsSpellIdChanged(true);
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    if (name === 'nodeType') {
+      setTalent(prevTalent => ({
+        ...prevTalent,
+        nodeType: parseInt(value, 10) // Ensure the value is parsed as an integer
+      }));
+    } else {
+      if (name === 'spellid') {
+        setIsSpellIdChanged(true);
+      }
+      if (name === 'rowIndex' || name === 'columnIndex') {
+        setIsOtherFieldsBlocked(true);
+      }
+      setTalent({
+        ...talent,
+        [name]: event.target.valueAsNumber,
+      });
+      if (name === 'numberRanks') {
+        setRanks({ ...ranks, numberRanks: event.target.valueAsNumber });
+      }
+      setChanges((prevChanges) => ({
+        ...prevChanges,
+        [name]: event.target.valueAsNumber,
+      }));
     }
-    if (
-      event.target.name === 'rowIndex' ||
-      event.target.name === 'columnIndex'
-    ) {
-      setIsOtherFieldsBlocked(true);
-    }
-    setTalent({
-      ...talent,
-      [event.target.name]: event.target.valueAsNumber,
-    });
-    if (event.target.name === 'numberRanks') {
-      setRanks({ ...ranks, numberRanks: event.target.valueAsNumber });
-    }
-    setChanges((prevChanges) => ({
-      ...prevChanges,
-      [event.target.name]: event.target.valueAsNumber,
-    }));
   };
+
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
+    console.log("Submitting with talent state:", talent);
     window.electron.ipcRenderer.sendMessage('endQuery', sql);
     props.setUpdater((prev) => !prev);
   };
@@ -161,12 +189,23 @@ const TalentModal = (props: {
       >
         <form onSubmit={handleSubmit} className="talentModalForm">
           <label>
+            Spell ID:
+            <input
+              type="number"
+              name="spellid"
+              onChange={handleChange}
+              value={talent.spellid}
+              disabled={isOtherFieldsBlocked}
+            />
+          </label>
+          <label>
             Talent Tab ID:
             <input
               type="number"
               name="talentTabId"
               onChange={handleChange}
               value={parseInt(className!)}
+              disabled={true}
             />
           </label>
           <label>
@@ -249,25 +288,21 @@ const TalentModal = (props: {
           </label>
           <label>
             Node Type:
-            <input
-              type="number"
-              name="nodeType"
-              onChange={handleChange}
-              value={talent.nodeType}
-            />
+          <select name="nodeType" onChange={handleChange} value={talent.nodeType}>
+              {nodeTypes.map(type => (
+                <option key={type.value} value={type.value}>
+                    {type.label}
+                </option>
+             ))}
+          </select>
           </label>
           <label>
             Node Index:
-            <input type="number" name="nodeIndex" onChange={handleChange} />
-          </label>
-          <label>
-            Spell ID:
             <input
-              type="number"
-              name="spellid"
-              onChange={handleChange}
-              value={talent.spellid}
-              disabled={isOtherFieldsBlocked}
+            type="number"
+            name="nodeIndex"
+            onChange={handleChange}
+            value={talent.nodeindex}
             />
           </label>
           <PreReqModal spellid={talent.spellid} setUpdater={props.setUpdater} />

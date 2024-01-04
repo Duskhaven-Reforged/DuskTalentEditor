@@ -6,12 +6,15 @@ import { Code, atomOneDark } from 'react-code-blocks';
 import { toast } from 'react-toastify';
 import { choiceNode } from './types/ChoiceNode.type';
 import { useParams } from 'react-router-dom';
+import { ForgeTalent } from './types/Forge_Talent.type';
 
 const ChoiceNodeModal = (props: {
+  forgeTalent: ForgeTalent | undefined;
   choiceNodeId: number;
   setUpdater: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [talent, setTalent] = useState<ForgeTalent>({} as ForgeTalent);
   const [choiceNodes, setChoiceNodes] = useState<choiceNode[]>([]);
   const [dbChoiceNodes, setDbChoiceNodes] = useState<choiceNode[]>([]);
   const [sqlQueries, setSqlQueries] = useState<string[]>([]);
@@ -34,6 +37,7 @@ const ChoiceNodeModal = (props: {
     const newChoice = dbReqItem || {
       choiceNodeId: props.choiceNodeId,
       choiceSpellId: 0,
+	    choiceIndex: 0,
       talentTabId: parseInt(className!),
     };
     setChoiceNodes([...choiceNodes, newChoice]);
@@ -95,7 +99,7 @@ const ChoiceNodeModal = (props: {
           sqlQuery = `UPDATE forge_talent_choice_nodes SET ${updateClause} WHERE choiceSpellId = ${dbChoiceNodes[index].choiceSpellId};`;
         }
       } else {
-        sqlQuery = `INSERT INTO forge_talent_choice_nodes (choiceNodeId, talentTabId, choiceSpellId) VALUES (${choiceItem.choiceNodeId}, ${choiceItem.talentTabId}, ${choiceItem.choiceSpellId});`;
+         sqlQuery = `INSERT INTO forge_talent_choice_nodes (choiceNodeId, talentTabId, choiceIndex, choiceSpellId) VALUES (${choiceItem.choiceNodeId}, ${choiceItem.talentTabId}, ${choiceItem.choiceIndex}, ${choiceItem.choiceSpellId});`;
       }
       if (sqlQuery) {
         sqlQueries.push(sqlQuery);
@@ -188,7 +192,7 @@ const ChoiceNodeModal = (props: {
                     onChange={(event) =>
                       handleChange(event, index, 'choiceNodeId')
                     }
-                    value={index + 1}
+                    value={choiceNodes[index].choiceNodeId}
                     disabled={true}
                   />
                 </label>
@@ -204,6 +208,17 @@ const ChoiceNodeModal = (props: {
                     value={className}
                   />
                 </label>
+                <label>
+				          choiceIndex:
+				          <input
+				          type="number"
+                  name="choiceIndex"
+                  onChange={(event) =>
+					        handleChange(event, index, 'choiceIndex')
+				          }
+					        value={choiceNodes[index].choiceIndex}
+				          />
+				        </label>
                 <label>
                   choiceSpellId:
                   <input
