@@ -48,14 +48,16 @@ function NavBar() {
   );
   const navigate = useNavigate();
 
-  const handleKeyClick = (key: string) => {
-    if (key === selectedKey) {
-      setSelectedKey('');
-    } else {
-      setSelectedKey(key);
-      setSelectedValues(classMap.get(key) || []);
-    }
+  const handleKeyHover = (key: string) => {
+    setSelectedKey(key);
+    setSelectedValues(classMap.get(key) || []);
   };
+
+  const handleMouseLeave = () => {
+    setSelectedKey(null);
+    setSelectedValues([]);
+  };
+
   const handleValueClick = (value: { specID: string; name: string }): void => {
     console.log('NAVIGATE VALUE CLICK');
     navigate(`/talentEditor/${value.specID}`);
@@ -67,21 +69,21 @@ function NavBar() {
         <div
           key={key}
           className="navbar-item"
-          onClick={() => handleKeyClick(key)}
+          onMouseEnter={() => handleKeyHover(key)}
+          onMouseLeave={handleMouseLeave}
         >
-          <img src={images[key as keyof typeof images]} />
+          <img src={images[key as keyof typeof images]} alt={key} />
           {selectedKey === key && (
             <div className="navbar-sub-items">
-              {selectedValues &&
-                selectedValues.map((value) => (
-                  <button
-                    key={value.specID}
-                    className="navbar-sub-item"
-                    onClick={() => handleValueClick(value)}
-                  >
-                    {value.name}
-                  </button>
-                ))}
+              {selectedValues?.map((value) => (
+                <button
+                  key={value.specID}
+                  className="navbar-sub-item"
+                  onClick={() => handleValueClick(value)} // Changed to onMouseEnter
+                >
+                  {value.name}
+                </button>
+              ))}
             </div>
           )}
         </div>
