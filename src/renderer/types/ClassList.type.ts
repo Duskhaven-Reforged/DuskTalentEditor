@@ -1,11 +1,11 @@
-export interface ClassList {
-  class: string;
-  specs: specs[];
-}
-
 interface specs {
   name: string;
   specID: string;
+}
+
+export interface ClassList {
+  class: string;
+  specs: specs[];
 }
 
 export const classLists: ClassList[] = [
@@ -155,7 +155,7 @@ export const classLists: ClassList[] = [
         specID: '32',
       },
       {
-        name: 'General',
+        name: 'General Tree',
         specID: '39',
       },
     ],

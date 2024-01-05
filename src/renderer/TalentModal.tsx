@@ -1,3 +1,4 @@
+import { classLists } from './types/ClassList.type';
 import { useEffect, useState } from 'react';
 import { ForgeTalent, nodeTypes } from './types/Forge_Talent.type';
 import Modal from 'react-modal';
@@ -18,6 +19,8 @@ const TalentModal = (props: {
   setUpdater: React.Dispatch<React.SetStateAction<boolean>>;
   row: number;
   column: number;
+  talentType: number;
+  nodeType: number;
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [talent, setTalent] = useState<ForgeTalent>({} as ForgeTalent);
@@ -27,6 +30,7 @@ const TalentModal = (props: {
   const [isSpellIdChanged, setIsSpellIdChanged] = useState(false);
   const [isOtherFieldsBlocked, setIsOtherFieldsBlocked] = useState(false);
   const { class: className } = useParams();
+  const [infoTooltipVisible, setInfoTooltipVisible] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (props.forgeTalent) {
@@ -47,6 +51,15 @@ const TalentModal = (props: {
   }, [props.forgeTalent]);
 
   useEffect(() => {
+    if (props.forgeTalent) {
+      setTalent({
+        ...props.forgeTalent,
+        nodeType: props.forgeTalent.nodeType ?? nodeTypes[0].value, // Default to the first nodeType if undefined
+      });
+    }
+  }, [props.forgeTalent]);
+
+  useEffect(() => {
     if (!props.forgeTalent) {
       setTalent((prevTalent) => ({
         ...prevTalent,
@@ -57,15 +70,31 @@ const TalentModal = (props: {
   }, [props.row, props.column]);
 
   useEffect(() => {
-    if (props.forgeTalent) {
-      setTalent({
-        ...props.forgeTalent,
-        nodeType: props.forgeTalent.nodeType ?? 0,
-      });
+    // Assuming className is the `specID` from the URL
+    const isGeneralTree = (className: string): boolean => {
+      return classLists.some((classItem) =>
+        classItem.specs.some(
+          (spec) =>
+            spec.name.includes('General Tree') && spec.specID === className,
+        ),
+      );
+    };
+
+    // Fetch the specID from URL params
+    const matchingSpec = classLists
+      .flatMap((cls) => cls.specs)
+      .find((spec) => spec.specID === className);
+    const currentTalentType =
+      matchingSpec && matchingSpec.name.includes('General Tree') ? 7 : 0;
+
+    // Set talentType only when forgeTalent is not set, assuming new talents are being created
+    if (!props.forgeTalent) {
+      setTalent((prevTalent) => ({
+        ...prevTalent,
+        talentType: currentTalentType,
+      }));
     }
-  }, [props.forgeTalent]);
-
-
+  }, [className, props.forgeTalent]);
 
   // useEffect(() => {
   //   console.log(options);
@@ -109,61 +138,61 @@ const TalentModal = (props: {
       first = false;
     }
 
-
     if (props.forgeTalent) {
-      sql += `UPDATE forge_talents SET ` + columns + ` WHERE spellid = ${props.forgeTalent.spellid};`;
+      sql += columns + ` WHERE spellid = ${props.forgeTalent.spellid};`;
     } else {
-      // Calculate nodeTypeValue to ensure it's not undefined
-      const nodeTypeValue = talent.nodeType !== undefined ? talent.nodeType : 0; // default value
-
-      // Construct the INSERT SQL query using nodeTypeValue
       sql +=
-        `INSERT INTO forge_talents (` +
         columns +
-        `, rowIndex, columnIndex, talentTabId, nodeType) VALUES (` +
+        `, rowIndex, columnIndex, talentTabId, talentType) VALUES (` +
         values +
-        `, ${props.row}, ${props.column}, ${className}, ${nodeTypeValue});`;
+        `, ${props.row}, ${props.column}, ${className}, ${talent.talentType});`;
     }
-
-    // Use the sql variable for further operations
-
-
 
     setSql(sql);
   };
 
-  const handleChange = (event) => {
+  const handleChange = (
+    event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
+  ) => {
     const { name, value } = event.target;
-    if (name === 'nodeType') {
-      setTalent(prevTalent => ({
-        ...prevTalent,
-        nodeType: parseInt(value, 10) // Ensure the value is parsed as an integer
-      }));
-    } else {
-      if (name === 'spellid') {
-        setIsSpellIdChanged(true);
-      }
-      if (name === 'rowIndex' || name === 'columnIndex') {
-        setIsOtherFieldsBlocked(true);
-      }
-      setTalent({
-        ...talent,
-        [name]: event.target.valueAsNumber,
-      });
-      if (name === 'numberRanks') {
-        setRanks({ ...ranks, numberRanks: event.target.valueAsNumber });
-      }
-      setChanges((prevChanges) => ({
-        ...prevChanges,
-        [name]: event.target.valueAsNumber,
-      }));
-    }
-  };
+    let valueToSet = value;
 
+    // Check if the input is "nodeType" and parse it as a number
+    if (name === 'nodeType') {
+      valueToSet = parseInt(value, 10);
+    }
+
+    // Update talent state
+    setTalent((prevTalent) => ({
+      ...prevTalent,
+      [name]: name === 'nodeType' ? valueToSet : event.target.valueAsNumber,
+    }));
+
+    if (event.target.name === 'spellid') {
+      setIsSpellIdChanged(true);
+    }
+    if (
+      event.target.name === 'rowIndex' ||
+      event.target.name === 'columnIndex'
+    ) {
+      setIsOtherFieldsBlocked(true);
+    }
+    setTalent({
+      ...talent,
+      [event.target.name]: event.target.valueAsNumber,
+    });
+    if (event.target.name === 'numberRanks') {
+      setRanks({ ...ranks, numberRanks: event.target.valueAsNumber });
+    }
+    setChanges((prevChanges) => ({
+      ...prevChanges,
+      [event.target.name]: event.target.valueAsNumber,
+      [name]: name === 'nodeType' ? valueToSet : event.target.valueAsNumber,
+    }));
+  };
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("Submitting with talent state:", talent);
     window.electron.ipcRenderer.sendMessage('endQuery', sql);
     props.setUpdater((prev) => !prev);
   };
@@ -179,6 +208,15 @@ const TalentModal = (props: {
     });
   });
 
+  const toggleInfoTooltip = (fieldName: string) => {
+    setInfoTooltipVisible(prev => ({ ...prev, [fieldName]: !prev[fieldName] }));
+  };
+
+  const fieldInfo = {
+    rankCost: "Rank Cost determines how many points are required to learn this talent.",
+    // Add similar descriptions for other fields
+  };
+
   return (
     <div className="talentWrapper">
       <Modal
@@ -188,16 +226,6 @@ const TalentModal = (props: {
         className={'TalentModalBG'}
       >
         <form onSubmit={handleSubmit} className="talentModalForm">
-          <label>
-            Spell ID:
-            <input
-              type="number"
-              name="spellid"
-              onChange={handleChange}
-              value={talent.spellid}
-              disabled={isOtherFieldsBlocked}
-            />
-          </label>
           <label>
             Talent Tab ID:
             <input
@@ -230,6 +258,16 @@ const TalentModal = (props: {
           </label>
           <label>
             Rank Cost:
+            <button
+              type="button"
+              className="infoButton"
+              onClick={() => toggleInfoTooltip('rankCost')}
+            >
+              (i)
+            </button>
+            {infoTooltipVisible.rankCost && (
+              <div className="tooltip">{fieldInfo.rankCost}</div>
+            )}
             <input
               type="number"
               name="rankCost"
@@ -253,6 +291,7 @@ const TalentModal = (props: {
               name="talentType"
               onChange={handleChange}
               value={talent.talentType}
+              disabled={true}
             />
           </label>
           <label>
@@ -288,21 +327,35 @@ const TalentModal = (props: {
           </label>
           <label>
             Node Type:
-          <select name="nodeType" onChange={handleChange} value={talent.nodeType}>
-              {nodeTypes.map(type => (
-                <option key={type.value} value={type.value}>
-                    {type.label}
+            <select
+              name="nodeType"
+              onChange={handleChange}
+              value={talent.nodeType}
+            >
+              {nodeTypes.map((type, index) => (
+                <option key={type.value} value={type.value} hidden={index === 0}>
+                  {type.label}
                 </option>
-             ))}
-          </select>
+              ))}
+            </select>
           </label>
           <label>
             Node Index:
             <input
-            type="number"
-            name="nodeIndex"
-            onChange={handleChange}
-            value={talent.nodeindex}
+              type="number"
+              name="nodeIndex"
+              onChange={handleChange}
+              value={talent.nodeindex}
+            />
+          </label>
+          <label>
+            Spell ID:
+            <input
+              type="number"
+              name="spellid"
+              onChange={handleChange}
+              value={talent.spellid}
+              disabled={isOtherFieldsBlocked}
             />
           </label>
           <PreReqModal spellid={talent.spellid} setUpdater={props.setUpdater} />
