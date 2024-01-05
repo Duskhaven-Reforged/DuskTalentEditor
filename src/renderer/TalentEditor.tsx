@@ -103,13 +103,14 @@ const TalentEditor = () => {
   // }, [spells]);
 
   useEffect(() => {
-    refreshTalents();
     loadTalents();
+    refreshTalents();
     console.log(className);
   }, [className]);
 
   function loadTalents() {
     console.log('LOAD TALENTS CALLED');
+    setTalents([]);
     window.electron.ipcRenderer.sendMessage(
       'query',
       `SELECT * FROM forge_talents WHERE talentTabId=${className}`,
@@ -152,6 +153,7 @@ const TalentEditor = () => {
         setUpdater={setUpdater}
         row={row}
         column={column}
+        key={`${row}${column}`}
       />
     );
   };
@@ -180,7 +182,7 @@ const TalentEditor = () => {
 
             return (
               <div
-                key={index}
+                key={`${index}${className}`}
                 draggable={findTalent(row, column) !== undefined}
                 onDragStart={(event) => handleDragStart(event, row, column)}
                 onDragOver={handleDragOver}

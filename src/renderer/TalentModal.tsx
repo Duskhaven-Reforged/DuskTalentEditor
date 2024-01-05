@@ -19,8 +19,6 @@ const TalentModal = (props: {
   setUpdater: React.Dispatch<React.SetStateAction<boolean>>;
   row: number;
   column: number;
-  talentType: number;
-  nodeType: number;
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [talent, setTalent] = useState<ForgeTalent>({} as ForgeTalent);
@@ -30,25 +28,9 @@ const TalentModal = (props: {
   const [isSpellIdChanged, setIsSpellIdChanged] = useState(false);
   const [isOtherFieldsBlocked, setIsOtherFieldsBlocked] = useState(false);
   const { class: className } = useParams();
-  const [infoTooltipVisible, setInfoTooltipVisible] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    if (props.forgeTalent) {
-      setTalent(props.forgeTalent);
-      const r: Ranks = {
-        talentSpellid: [props.forgeTalent.spellid],
-        talentTabid: props.forgeTalent.talentTabId,
-        numberRanks: props.forgeTalent.numberRanks,
-      };
-      setRanks(r);
-    } else {
-      const r: Ranks = {
-        talentSpellid: [1],
-        talentTabid: 1,
-        numberRanks: 1,
-      };
-    }
-  }, [props.forgeTalent]);
+  const [infoTooltipVisible, setInfoTooltipVisible] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     if (props.forgeTalent) {
@@ -56,16 +38,29 @@ const TalentModal = (props: {
         ...props.forgeTalent,
         nodeType: props.forgeTalent.nodeType ?? nodeTypes[0].value, // Default to the first nodeType if undefined
       });
+      setSql('');
+      setChanges({});
     }
   }, [props.forgeTalent]);
 
   useEffect(() => {
     if (!props.forgeTalent) {
-      setTalent((prevTalent) => ({
-        ...prevTalent,
+      setTalent({
+        talentTabId: parseInt(className!),
         rowIndex: props.row,
         columnIndex: props.column,
-      }));
+        rankCost: 0,
+        minLevel: 0,
+        talentType: 0,
+        numberRanks: 1,
+        preReqType: 1,
+        tabPointReq: 0,
+        nodeType: 0,
+        nodeindex: 0,
+        spellid: 0,
+      });
+      setSql('');
+      setChanges({});
     }
   }, [props.row, props.column]);
 
@@ -155,7 +150,7 @@ const TalentModal = (props: {
     event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
   ) => {
     const { name, value } = event.target;
-    let valueToSet = value;
+    let valueToSet: number = parseInt(value);
 
     // Check if the input is "nodeType" and parse it as a number
     if (name === 'nodeType') {
@@ -165,7 +160,7 @@ const TalentModal = (props: {
     // Update talent state
     setTalent((prevTalent) => ({
       ...prevTalent,
-      [name]: name === 'nodeType' ? valueToSet : event.target.valueAsNumber,
+      [name]: name === 'nodeType' ? valueToSet : parseInt(value),
     }));
 
     if (event.target.name === 'spellid') {
@@ -179,15 +174,15 @@ const TalentModal = (props: {
     }
     setTalent({
       ...talent,
-      [event.target.name]: event.target.valueAsNumber,
+      [event.target.name]: parseInt(value),
     });
     if (event.target.name === 'numberRanks') {
-      setRanks({ ...ranks, numberRanks: event.target.valueAsNumber });
+      setRanks({ ...ranks, numberRanks: parseInt(value) });
     }
     setChanges((prevChanges) => ({
       ...prevChanges,
-      [event.target.name]: event.target.valueAsNumber,
-      [name]: name === 'nodeType' ? valueToSet : event.target.valueAsNumber,
+      [event.target.name]: parseInt(value),
+      [name]: name === 'nodeType' ? valueToSet : parseInt(value),
     }));
   };
 
@@ -209,11 +204,15 @@ const TalentModal = (props: {
   });
 
   const toggleInfoTooltip = (fieldName: string) => {
-    setInfoTooltipVisible(prev => ({ ...prev, [fieldName]: !prev[fieldName] }));
+    setInfoTooltipVisible((prev) => ({
+      ...prev,
+      [fieldName]: !prev[fieldName],
+    }));
   };
 
   const fieldInfo = {
-    rankCost: "Rank Cost determines how many points are required to learn this talent.",
+    rankCost:
+      'Rank Cost determines how many points are required to learn this talent.',
     // Add similar descriptions for other fields
   };
 
@@ -234,7 +233,6 @@ const TalentModal = (props: {
               // onChange={handleChange}
               disabled={true}
               value={parseInt(className!)}
-              disabled={true}
             />
           </label>
           <label>
@@ -335,7 +333,11 @@ const TalentModal = (props: {
               value={talent.nodeType}
             >
               {nodeTypes.map((type, index) => (
-                <option key={type.value} value={type.value} hidden={index === 0}>
+                <option
+                  key={type.value}
+                  value={type.value}
+                  hidden={index === 0}
+                >
                   {type.label}
                 </option>
               ))}
@@ -362,6 +364,7 @@ const TalentModal = (props: {
           </label>
           <PreReqModal spellid={talent.spellid} setUpdater={props.setUpdater} />
           <ChoiceNodeModal
+            forgeTalent={talent}
             choiceNodeId={talent.spellid}
             setUpdater={props.setUpdater}
           />
