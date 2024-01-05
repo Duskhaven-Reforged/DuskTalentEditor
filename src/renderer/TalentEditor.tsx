@@ -19,6 +19,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Ruler from './shared/Ruler';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRefresh } from '@fortawesome/free-solid-svg-icons';
 
 const TalentEditor = () => {
   const { class: className } = useParams();
@@ -158,6 +160,10 @@ const TalentEditor = () => {
     );
   };
 
+  const clickRefresh = () => {
+    setUpdater((prev) => !prev);
+  };
+
   const generateNumbers = (n: number) => {
     return Array.from({ length: n }, (_, i) => i + 1);
   };
@@ -165,6 +171,9 @@ const TalentEditor = () => {
   return (
     <div className="talentWrapper">
       {/* <NavBar /> */}
+      <div className="refreshButton" onClick={clickRefresh}>
+        <FontAwesomeIcon icon={faRefresh} />
+      </div>
       <ToastContainer />
       <div className="ruler-row">
         <Ruler numbers={generateNumbers(11)} />

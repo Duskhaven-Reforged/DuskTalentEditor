@@ -48,6 +48,17 @@
   }
 }
 
+.refreshButton {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #bbbbbb;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+}
+
 #root {
   height: 100%;
   width: 100%;
