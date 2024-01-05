@@ -165,7 +165,8 @@ const TalentModal = (props: {
             <input
               type="number"
               name="talentTabId"
-              onChange={handleChange}
+              // onChange={handleChange}
+              disabled={true}
               value={parseInt(className!)}
             />
           </label>
@@ -223,6 +224,7 @@ const TalentModal = (props: {
               name="numberRanks"
               onChange={handleChange}
               value={talent.numberRanks}
+              max={2}
             />
             <RanksModal
               spellid={talent.spellid}
@@ -235,7 +237,7 @@ const TalentModal = (props: {
               type="number"
               name="preReqType"
               onChange={handleChange}
-              value={talent.preReqType}
+              value={talent.preReqType === 0 ? 0 : 1}
             />
           </label>
           <label>
