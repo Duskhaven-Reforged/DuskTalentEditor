@@ -138,9 +138,9 @@ const TalentModal = (props: {
     } else {
       sql +=
         columns +
-        `, rowIndex, columnIndex, talentTabId, talentType) VALUES (` +
+        `, rowIndex, columnIndex, talentTabId, talentType, preReqType) VALUES (` +
         values +
-        `, ${props.row}, ${props.column}, ${className}, ${talent.talentType});`;
+        `, ${props.row}, ${props.column}, ${className}, ${talent.talentType}, ${talent.preReqType});`;
     }
 
     setSql(sql);
@@ -314,6 +314,7 @@ const TalentModal = (props: {
               name="preReqType"
               onChange={handleChange}
               value={talent.preReqType === 0 ? 0 : 1}
+              disabled={true}
             />
           </label>
           <label>
