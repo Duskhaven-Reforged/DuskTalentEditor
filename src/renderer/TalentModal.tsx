@@ -233,7 +233,7 @@ const TalentModal = (props: {
     } else {
       sql +=
         columns +
-        `, rowIndex, columnIndex, talentTabId, talentType, preReqType, tabPointReq, rankCost, minLevel, nodeIndex) VALUES (` +
+        `, rowIndex, columnIndex, talentTabId, talentType, preReqType, tabPointReq, rankCost, minLevel) VALUES (` +
         values +
         `, ${props.row}, ${props.column}, ${className}, ${talent.talentType}, ${talent.preReqType}, ${talent.tabPointReq}, ${talent.rankCost}, ${talent.minLevel});`;
     }
