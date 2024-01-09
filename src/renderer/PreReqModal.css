@@ -39,7 +39,7 @@
     &:hover {
       background: var(--focus);
       border-color: var(--focus);
-      transform: translateY(-.2rem);
+      transform: translateY(-0.2rem);
     }
   }
 }
@@ -60,11 +60,11 @@
     font-family: 'Poppins';
     font-size: 18px;
 
-  &:hover {
-    background: var(--focus);
-    border-color: var(--focus);
-    transform: translateY(-.2rem);
-  }
+    &:hover {
+      background: var(--focus);
+      border-color: var(--focus);
+      transform: translateY(-0.2rem);
+    }
   }
 }
 
@@ -72,4 +72,12 @@
   display: flex;
   flex-direction: column;
   width: 500px;
+}
+
+.nodeBlocks {
+  width: 800px;
+}
+
+.nodeIndexWrap {
+  width: 90%;
 }

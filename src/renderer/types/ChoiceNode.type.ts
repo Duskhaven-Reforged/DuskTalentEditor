@@ -3,5 +3,4 @@ export type choiceNode = {
   talentTabId: number;
   choiceIndex: number;
   choiceSpellId: number;
-  choiceIndex: number;
 };

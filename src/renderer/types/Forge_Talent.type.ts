@@ -11,6 +11,7 @@ export interface ForgeTalent {
   nodeType: number;
   nodeindex: number;
   spellid: number;
+  trueNodeIndex?: number;
 }
 
 export const nodeTypes = [

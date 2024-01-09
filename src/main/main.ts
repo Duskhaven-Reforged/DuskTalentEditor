@@ -136,6 +136,22 @@ ipcMain.on('ranksEndQuery', (event, query) => {
   }
 });
 
+ipcMain.on('nodeEndQuery', (event, query) => {
+  if (pool) {
+    pool.query(query, (error, results) => {
+      if (error) {
+        console.error('Failed to execute query:', error);
+        event.reply('nodeEndQuery', null);
+      } else {
+        event.reply('nodeEndQuery', results);
+      }
+    });
+  } else {
+    console.error('Not connected to the database');
+    event.reply('nodeEndQuery', null);
+  }
+});
+
 ipcMain.on('preReqQuery', (event, query) => {
   if (pool) {
     pool.query(query, (error, results) => {

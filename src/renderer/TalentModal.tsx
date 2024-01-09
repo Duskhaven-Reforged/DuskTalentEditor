@@ -13,12 +13,14 @@ import { Ranks } from './types/Ranks.type';
 import PreReqModal from './PreReqModal';
 import { classLists } from './types/ClassList.type';
 import ChoiceNodeModal from './ChoiceNodeModal';
+import TooltipComponent from './shared/ToolTip';
 
 const TalentModal = (props: {
   forgeTalent: ForgeTalent | undefined;
   setUpdater: React.Dispatch<React.SetStateAction<boolean>>;
   row: number;
   column: number;
+  setNodeIndexQueries: React.Dispatch<React.SetStateAction<string[]>>;
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [talent, setTalent] = useState<ForgeTalent>({} as ForgeTalent);
@@ -28,9 +30,6 @@ const TalentModal = (props: {
   const [isSpellIdChanged, setIsSpellIdChanged] = useState(false);
   const [isOtherFieldsBlocked, setIsOtherFieldsBlocked] = useState(false);
   const { class: className } = useParams();
-  const [infoTooltipVisible, setInfoTooltipVisible] = useState<
-    Record<string, boolean>
-  >({});
 
   useEffect(() => {
     if (props.forgeTalent) {
@@ -46,19 +45,34 @@ const TalentModal = (props: {
   useEffect(() => {
     if (props.forgeTalent) {
       const currentRow = props.forgeTalent.rowIndex;
-      const rowToMinLevel = {
-        1: 11,
-        2: 13,
-        3: 15,
-        4: 17,
-        5: 27,
-        6: 29,
-        7: 31,
-        8: 47,
-        9: 49,
-        10: 51,
-        11: 60,
-      };
+      const rowToMinLevel: Record<number, number> =
+        props.forgeTalent.talentType === 7
+          ? {
+              1: 10,
+              2: 12,
+              3: 14,
+              4: 16,
+              5: 26,
+              6: 28,
+              7: 30,
+              8: 46,
+              9: 48,
+              10: 50,
+              11: 60,
+            }
+          : {
+              1: 11,
+              2: 13,
+              3: 15,
+              4: 17,
+              5: 27,
+              6: 29,
+              7: 31,
+              8: 47,
+              9: 49,
+              10: 51,
+              11: 60,
+            };
       const minLevel = rowToMinLevel[currentRow] || 0; // Default to 0 if row is not in the map
 
       let tabPointReq = props.forgeTalent.tabPointReq;
@@ -69,6 +83,16 @@ const TalentModal = (props: {
         tabPointReq = 18;
       } else {
         tabPointReq = 0;
+      }
+
+      if (
+        props.forgeTalent.trueNodeIndex &&
+        props.forgeTalent.trueNodeIndex != props.forgeTalent.nodeindex
+      ) {
+        props.setNodeIndexQueries((prev) => [
+          ...prev,
+          `UPDATE forge_talents SET nodeIndex = ${props.forgeTalent?.trueNodeIndex} WHERE spellid = ${props.forgeTalent?.spellid} AND talentTabId = ${className}`,
+        ]);
       }
 
       // Update talent state with new data
@@ -88,7 +112,7 @@ const TalentModal = (props: {
 
   useEffect(() => {
     if (!props.forgeTalent && className) {
-      const rowToMinLevel = {
+      const rowToMinLevel: Record<number, number> = {
         1: 11,
         2: 13,
         3: 15,
@@ -121,7 +145,7 @@ const TalentModal = (props: {
         numberRanks: 0,
         preReqType: 1,
         tabPointReq: tabPointReq,
-        nodeType: '',
+        nodeType: 0,
         nodeindex: 0,
         spellid: 0,
       });
@@ -197,11 +221,19 @@ const TalentModal = (props: {
     }
 
     if (props.forgeTalent) {
-      sql += columns + ` WHERE spellid = ${props.forgeTalent.spellid};`;
+      sql += columns;
+      // if (
+      //   props.forgeTalent.trueNodeIndex &&
+      //   props.forgeTalent.trueNodeIndex != props.forgeTalent.nodeindex
+      // ) {
+      //   sql += `, nodeIndex = ${props.forgeTalent.trueNodeIndex}`;
+      // }
+
+      sql += ` WHERE spellid = ${props.forgeTalent.spellid} AND talentTabId = ${className};`;
     } else {
       sql +=
         columns +
-        `, rowIndex, columnIndex, talentTabId, talentType, preReqType, tabPointReq, rankCost, minLevel) VALUES (` +
+        `, rowIndex, columnIndex, talentTabId, talentType, preReqType, tabPointReq, rankCost, minLevel, nodeIndex) VALUES (` +
         values +
         `, ${props.row}, ${props.column}, ${className}, ${talent.talentType}, ${talent.preReqType}, ${talent.tabPointReq}, ${talent.rankCost}, ${talent.minLevel});`;
     }
@@ -266,16 +298,7 @@ const TalentModal = (props: {
     });
   });
 
-  const toggleInfoTooltip = (fieldName: string) => {
-    setInfoTooltipVisible((prev) => ({
-      ...prev,
-      [fieldName]: !prev[fieldName],
-    }));
-  };
-
   const fieldInfo = {
-    rankCost:
-      'Rank Cost determines how many points are required to learn this talent.',
     spellID: 'The ID of the Spell you want as the Talent',
     numberRanks: 'How many ranks of this talent are available? - Min: 1 Max: 2',
     nodeIndex:
@@ -306,16 +329,10 @@ const TalentModal = (props: {
         <form onSubmit={handleSubmit} className="talentModalForm">
           <label>
             Spell ID:
-            <button
-              type="button"
-              className="infoButton"
-              onClick={() => toggleInfoTooltip('spellID')}
-            >
-              (i)
-            </button>
-            {infoTooltipVisible.spellID && (
-              <div className="tooltip">{fieldInfo.spellID}</div>
-            )}
+            <TooltipComponent
+              tip={fieldInfo.spellID}
+              tipId={fieldInfo.spellID}
+            />
             <input
               type="number"
               name="spellid"
@@ -327,16 +344,10 @@ const TalentModal = (props: {
           </label>
           <label>
             Number Ranks:
-            <button
-              type="button"
-              className="infoButton"
-              onClick={() => toggleInfoTooltip('numberRanks')}
-            >
-              (i)
-            </button>
-            {infoTooltipVisible.numberRanks && (
-              <div className="tooltip">{fieldInfo.numberRanks}</div>
-            )}
+            <TooltipComponent
+              tip={fieldInfo.numberRanks}
+              tipId={fieldInfo.numberRanks}
+            />
             <input
               type="number"
               name="numberRanks"
@@ -352,16 +363,10 @@ const TalentModal = (props: {
           </label>
           <label>
             Node Index:
-            <button
-              type="button"
-              className="infoButton"
-              onClick={() => toggleInfoTooltip('nodeIndex')}
-            >
-              (i)
-            </button>
-            {infoTooltipVisible.nodeIndex && (
-              <div className="tooltip">{fieldInfo.nodeIndex}</div>
-            )}
+            <TooltipComponent
+              tip={fieldInfo.nodeIndex}
+              tipId={fieldInfo.nodeIndex}
+            />
             <input
               type="number"
               name="nodeindex"
@@ -373,22 +378,14 @@ const TalentModal = (props: {
           </label>
           <label>
             Node Type:
-            <button
-              type="button"
-              className="infoButton"
-              onClick={() => toggleInfoTooltip('nodeType')}
-            >
-              (i)
-            </button>
-            {infoTooltipVisible.nodeType && (
-              <div className="tooltip">{fieldInfo.nodeType}</div>
-            )}
+            <TooltipComponent
+              tip={fieldInfo.nodeType}
+              tipId={fieldInfo.nodeType}
+            />
             <select
               name="nodeType"
               onChange={handleChange}
               value={talent.nodeType}
-              min={0}
-              max={2}
             >
               {nodeTypes.map((type, index) => (
                 <option
@@ -403,16 +400,10 @@ const TalentModal = (props: {
           </label>
           <label>
             Talent Tab ID:
-            <button
-              type="button"
-              className="infoButton"
-              onClick={() => toggleInfoTooltip('TalentTabID')}
-            >
-              (i)
-            </button>
-            {infoTooltipVisible.TalentTabID && (
-              <div className="tooltip">{fieldInfo.talentTabID}</div>
-            )}
+            <TooltipComponent
+              tip={fieldInfo.talentTabID}
+              tipId={fieldInfo.talentTabID}
+            />
             <input
               type="number"
               name="talentTabId"
@@ -424,16 +415,10 @@ const TalentModal = (props: {
           </label>
           <label>
             Column Index:
-            <button
-              type="button"
-              className="infoButton"
-              onClick={() => toggleInfoTooltip('columnIndex')}
-            >
-              (i)
-            </button>
-            {infoTooltipVisible.columnIndex && (
-              <div className="tooltip">{fieldInfo.columnIndex}</div>
-            )}
+            <TooltipComponent
+              tip={fieldInfo.columnIndex}
+              tipId={fieldInfo.columnIndex}
+            />
             <input
               type="number"
               name="columnIndex"
@@ -445,16 +430,10 @@ const TalentModal = (props: {
           </label>
           <label>
             Row Index:
-            <button
-              type="button"
-              className="infoButton"
-              onClick={() => toggleInfoTooltip('rowIndex')}
-            >
-              (i)
-            </button>
-            {infoTooltipVisible.rowIndex && (
-              <div className="tooltip">{fieldInfo.rowIndex}</div>
-            )}
+            <TooltipComponent
+              tip={fieldInfo.rowIndex}
+              tipId={fieldInfo.rowIndex}
+            />
             <input
               type="number"
               name="rowIndex"
@@ -465,16 +444,10 @@ const TalentModal = (props: {
           </label>
           <label>
             Rank Cost:
-            <button
-              type="button"
-              className="infoButton"
-              onClick={() => toggleInfoTooltip('rankCost')}
-            >
-              (i)
-            </button>
-            {infoTooltipVisible.rankCost && (
-              <div className="tooltip">{fieldInfo.rankCost}</div>
-            )}
+            <TooltipComponent
+              tip={fieldInfo.rankCost}
+              tipId={fieldInfo.rankCost}
+            />
             <input
               type="number"
               name="rankCost"
@@ -485,16 +458,10 @@ const TalentModal = (props: {
           </label>
           <label>
             Min Level:
-            <button
-              type="button"
-              className="infoButton"
-              onClick={() => toggleInfoTooltip('minLevel')}
-            >
-              (i)
-            </button>
-            {infoTooltipVisible.minLevel && (
-              <div className="tooltip">{fieldInfo.minLevel}</div>
-            )}
+            <TooltipComponent
+              tip={fieldInfo.minLevel}
+              tipId={fieldInfo.minLevel}
+            />
             <input
               type="number"
               name="minLevel"
@@ -506,16 +473,10 @@ const TalentModal = (props: {
           </label>
           <label>
             Talent Type:
-            <button
-              type="button"
-              className="infoButton"
-              onClick={() => toggleInfoTooltip('talentType')}
-            >
-              (i)
-            </button>
-            {infoTooltipVisible.talentType && (
-              <div className="tooltip">{fieldInfo.TalentType}</div>
-            )}
+            <TooltipComponent
+              tip={fieldInfo.TalentType}
+              tipId={fieldInfo.TalentType}
+            />
             <input
               type="number"
               name="talentType"
@@ -536,16 +497,10 @@ const TalentModal = (props: {
           </label>
           <label>
             Tab Point Req:
-            <button
-              type="button"
-              className="infoButton"
-              onClick={() => toggleInfoTooltip('TabPointReq')}
-            >
-              (i)
-            </button>
-            {infoTooltipVisible.TabPointReq && (
-              <div className="tooltip">{fieldInfo.TabPointReq}</div>
-            )}
+            <TooltipComponent
+              tip={fieldInfo.TabPointReq}
+              tipId={fieldInfo.TabPointReq}
+            />
             <input
               type="number"
               name="tabPointReq"

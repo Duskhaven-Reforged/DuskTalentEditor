@@ -21,11 +21,15 @@ import Ruler from './shared/Ruler';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRefresh } from '@fortawesome/free-solid-svg-icons';
+import NodeIndexModal from './NodeIndexModal';
 
 const TalentEditor = () => {
   const { class: className } = useParams();
   const [talents, setTalents] = useState<ForgeTalent[]>([]);
+  const [sortedTalents, setSortedTalents] = useState<ForgeTalent[]>([]);
   const [updater, setUpdater] = useState(false);
+  const [nodeIndexQueries, setNodeIndexQueries] = useState<string[]>([]);
+  const [nodeModal, setNodeModal] = useState(false);
 
   const handleDragStart = (
     event: { dataTransfer: { setData: (arg0: string, arg1: string) => void } },
@@ -98,6 +102,12 @@ const TalentEditor = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (nodeIndexQueries.length > 0) {
+      setNodeModal(true);
+    }
+  }, [nodeIndexQueries]);
+
   Modal.setAppElement('#root');
 
   // useEffect(() => {
@@ -110,6 +120,28 @@ const TalentEditor = () => {
     console.log(className);
   }, [className]);
 
+  useEffect(() => {
+    // Create a copy of the talents array
+    let sortedTalents = [...talents];
+
+    // Sort the talents array by rowIndex and columnIndex
+    sortedTalents.sort((a, b) => {
+      if (a.rowIndex === b.rowIndex) {
+        return a.columnIndex - b.columnIndex;
+      } else {
+        return a.rowIndex - b.rowIndex;
+      }
+    });
+
+    // Calculate the trueNodeIndex for each talent
+    sortedTalents.forEach((talent, index) => {
+      talent.trueNodeIndex = index + 1;
+    });
+
+    // Update the state with the sorted and updated talents
+    setSortedTalents(sortedTalents);
+  }, [talents]);
+
   function loadTalents() {
     console.log('LOAD TALENTS CALLED');
     setTalents([]);
@@ -120,7 +152,7 @@ const TalentEditor = () => {
   }
 
   const findTalent = (row: number, column: number) => {
-    return talents.find(
+    return sortedTalents.find(
       (talent) => talent.rowIndex === row && talent.columnIndex === column,
     );
   };
@@ -155,6 +187,7 @@ const TalentEditor = () => {
         setUpdater={setUpdater}
         row={row}
         column={column}
+        setNodeIndexQueries={setNodeIndexQueries}
         key={`${row}${column}`}
       />
     );
@@ -171,6 +204,11 @@ const TalentEditor = () => {
   return (
     <div className="talentWrapper">
       {/* <NavBar /> */}
+      <NodeIndexModal
+        sqlQueries={nodeIndexQueries}
+        setUpdater={setUpdater}
+        setModal={nodeModal}
+      />
       <div className="refreshButton" onClick={clickRefresh}>
         <FontAwesomeIcon icon={faRefresh} />
       </div>
