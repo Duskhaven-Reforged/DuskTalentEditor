@@ -8,7 +8,7 @@ export interface ForgeTalent {
   numberRanks: number;
   preReqType: number;
   tabPointReq: number;
-  nodeType: number;
+  nodeType: number | string;
   nodeindex: number;
   spellid: number;
   trueNodeIndex?: number;

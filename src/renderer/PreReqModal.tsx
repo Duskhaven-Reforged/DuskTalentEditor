@@ -4,6 +4,8 @@ import { preReqTalents } from './types/forge_talent_prereq.type';
 import './PreReqModal.css';
 import { Code, atomOneDark } from 'react-code-blocks';
 import { toast } from 'react-toastify';
+import { useParams } from 'react-router-dom';
+import TooltipComponent from './shared/ToolTip';
 
 const PreReqModal = (props: {
   spellid: number;
@@ -13,6 +15,7 @@ const PreReqModal = (props: {
   const [preReq, setPreReq] = useState<preReqTalents[]>([]);
   const [dbReq, setDbReq] = useState<preReqTalents[]>([]);
   const [sqlQueries, setSqlQueries] = useState<string[]>([]);
+  const { class: className } = useParams();
 
   const openModal = () => {
     setModalIsOpen(true);
@@ -29,10 +32,10 @@ const PreReqModal = (props: {
     const newPreReqItem = dbReqItem || {
       reqId: reqId,
       spellid: props.spellid,
-      talentTabId: 0,
+      talentTabId: parseInt(className!),
       reqTalent: 0,
-      reqTalentTabId: 0,
-      reqRank: 0,
+      reqTalentTabId: parseInt(className!),
+      reqRank: 1,
     };
     setPreReq([...preReq, newPreReqItem]);
   };
@@ -208,10 +211,15 @@ const PreReqModal = (props: {
                       handleChange(event, index, 'talentTabId')
                     }
                     value={preReq[index].talentTabId}
+                    disabled={true}
                   />
                 </label>
                 <label>
-                  reqTalent:
+                  reqTalent:{' '}
+                  <TooltipComponent
+                    tip="The ID of the talent that is required before you can take this talent."
+                    tipId="reqTalent"
+                  />
                   <input
                     type="number"
                     name="reqTalent"
@@ -230,6 +238,7 @@ const PreReqModal = (props: {
                       handleChange(event, index, 'reqTalentTabId')
                     }
                     value={preReq[index].reqTalentTabId}
+                    disabled={true}
                   />
                 </label>
                 <label>
@@ -239,6 +248,7 @@ const PreReqModal = (props: {
                     name="reqRank"
                     onChange={(event) => handleChange(event, index, 'reqRank')}
                     value={preReq[index].reqRank}
+                    disabled={true}
                   />
                 </label>
                 <button

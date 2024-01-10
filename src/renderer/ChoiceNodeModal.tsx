@@ -7,6 +7,7 @@ import { toast } from 'react-toastify';
 import { choiceNode } from './types/ChoiceNode.type';
 import { useParams } from 'react-router-dom';
 import { ForgeTalent } from './types/Forge_Talent.type';
+import TooltipComponent from './shared/ToolTip';
 
 const ChoiceNodeModal = (props: {
   forgeTalent: ForgeTalent | undefined;
@@ -31,13 +32,20 @@ const ChoiceNodeModal = (props: {
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
     choiceSpellId: number,
   ) => {
+    if (choiceNodes.length >= 2) {
+      return;
+    }
+
     const dbReqItem = dbChoiceNodes.find(
       (item) => item.choiceSpellId === choiceSpellId,
     );
     const newChoice = dbReqItem || {
       choiceNodeId: props.choiceNodeId,
-      choiceSpellId: 0,
-	    choiceIndex: 0,
+      choiceSpellId:
+        choiceNodes.length === 0 && props.forgeTalent
+          ? props.forgeTalent.spellid
+          : 0,
+      choiceIndex: choiceNodes.length + 1,
       talentTabId: parseInt(className!),
     };
     setChoiceNodes([...choiceNodes, newChoice]);
@@ -99,7 +107,7 @@ const ChoiceNodeModal = (props: {
           sqlQuery = `UPDATE forge_talent_choice_nodes SET ${updateClause} WHERE choiceSpellId = ${dbChoiceNodes[index].choiceSpellId};`;
         }
       } else {
-         sqlQuery = `INSERT INTO forge_talent_choice_nodes (choiceNodeId, talentTabId, choiceIndex, choiceSpellId) VALUES (${choiceItem.choiceNodeId}, ${choiceItem.talentTabId}, ${choiceItem.choiceIndex}, ${choiceItem.choiceSpellId});`;
+        sqlQuery = `INSERT INTO forge_talent_choice_nodes (choiceNodeId, talentTabId, choiceIndex, choiceSpellId) VALUES (${choiceItem.choiceNodeId}, ${choiceItem.talentTabId}, ${choiceItem.choiceIndex}, ${choiceItem.choiceSpellId});`;
       }
       if (sqlQuery) {
         sqlQueries.push(sqlQuery);
@@ -209,18 +217,23 @@ const ChoiceNodeModal = (props: {
                   />
                 </label>
                 <label>
-				          choiceIndex:
-				          <input
-				          type="number"
-                  name="choiceIndex"
-                  onChange={(event) =>
-					        handleChange(event, index, 'choiceIndex')
-				          }
-					        value={choiceNodes[index].choiceIndex}
-				          />
-				        </label>
+                  choiceIndex:
+                  <input
+                    type="number"
+                    name="choiceIndex"
+                    onChange={(event) =>
+                      handleChange(event, index, 'choiceIndex')
+                    }
+                    value={choiceNodes[index].choiceIndex}
+                    disabled={true}
+                  />
+                </label>
                 <label>
-                  choiceSpellId:
+                  choiceSpellId:{' '}
+                  <TooltipComponent
+                    tip="ID of spell that you want inside Choice Node."
+                    tipId="choiceSpellId"
+                  />
                   <input
                     type="number"
                     name="choiceSpellId"
@@ -228,6 +241,8 @@ const ChoiceNodeModal = (props: {
                       handleChange(event, index, 'choiceSpellId')
                     }
                     value={choiceNodes[index].choiceSpellId}
+                    disabled={index === 0}
+                    min={0}
                   />
                 </label>
                 <button

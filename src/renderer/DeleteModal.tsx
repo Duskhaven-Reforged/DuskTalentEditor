@@ -8,18 +8,18 @@ import { choiceNode } from './types/ChoiceNode.type';
 import { useParams } from 'react-router-dom';
 import { ForgeTalent } from './types/Forge_Talent.type';
 
-const NodeIndexModal = (props: {
-  sqlQueries: string[];
+const DeleteModal = (props: {
+  spellID: number;
   setUpdater: React.Dispatch<React.SetStateAction<boolean>>;
   setModal: React.Dispatch<boolean>;
   isOpen: boolean;
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [sqlQueries, setSqlQueries] = useState<string[]>([]);
   const { class: className } = useParams();
 
   useEffect(() => {
     setModalIsOpen(props.isOpen);
-    console.log('NODE MODAL OPEN? ' + props.isOpen);
   }, [props.isOpen]);
 
   const closeModal = () => {
@@ -27,10 +27,21 @@ const NodeIndexModal = (props: {
     props.setModal(false);
   };
 
+  useEffect(() => {
+    const deleteQueries: string[] = [
+      `DELETE FROM forge_talents WHERE spellid=${props.spellID} AND talentTabId=${className};`,
+      `DELETE FROM forge_talent_choice_nodes WHERE choiceNodeId=${props.spellID} AND talentTabId=${className}`,
+      `DELETE FROM forge_talent_ranks WHERE talentSpellId=${props.spellID} AND talentTabId=${className}`,
+      `DELETE FROM forge_talent_prereq WHERE (spellid=${props.spellID} AND talentTabId=${className}) OR (reqTalent=${props.spellID} AND talentTabId=${className})`,
+    ];
+
+    setSqlQueries(deleteQueries);
+  }, [props.spellID]);
+
   async function handleSubmit(event: React.FormEvent) {
-    for (let sql of props.sqlQueries) {
+    for (let sql of sqlQueries) {
       await new Promise<void>((resolve, reject) => {
-        window.electron.ipcRenderer.sendMessage('nodeEndQuery', sql);
+        window.electron.ipcRenderer.sendMessage('deleteQuery', sql);
         window.electron.ipcRenderer.once(
           'nodeEndQuery',
           (event: any, args: any) => {
@@ -86,12 +97,12 @@ const NodeIndexModal = (props: {
         onRequestClose={closeModal}
       >
         <form onSubmit={handleSubmit} className="preReqWrap ">
-          <h4>Node Index Update Confirmation</h4>
+          <h4>Delete Confirmation</h4>
           <div className="codeBlocks nodeBlocks">
-            {Array.from({ length: props.sqlQueries.length }).map((_, index) => {
+            {Array.from({ length: sqlQueries.length }).map((_, index) => {
               return (
                 <Code
-                  text={props.sqlQueries[index]}
+                  text={sqlQueries[index]}
                   language="sql"
                   theme={atomOneDark}
                   customStyle={{ fontSize: '12px' }}
@@ -108,4 +119,4 @@ const NodeIndexModal = (props: {
   );
 };
 
-export default NodeIndexModal;
+export default DeleteModal;

@@ -121,6 +121,7 @@ const TalentEditor = () => {
   }, [className]);
 
   useEffect(() => {
+    console.log("SORTING STARTED")
     // Create a copy of the talents array
     let sortedTalents = [...talents];
 
@@ -207,7 +208,8 @@ const TalentEditor = () => {
       <NodeIndexModal
         sqlQueries={nodeIndexQueries}
         setUpdater={setUpdater}
-        setModal={nodeModal}
+        setModal={setNodeModal}
+        isOpen={nodeModal}
       />
       <div className="refreshButton" onClick={clickRefresh}>
         <FontAwesomeIcon icon={faRefresh} />

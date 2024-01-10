@@ -88,6 +88,22 @@ ipcMain.on('updateQuery', (event, query) => {
   }
 });
 
+ipcMain.on('deleteQuery', (event, query) => {
+  if (pool) {
+    pool.query(query, (error, results) => {
+      if (error) {
+        console.error('Failed to execute query:', error);
+        event.reply('deleteQuery', null);
+      } else {
+        event.reply('deleteQuery', results);
+      }
+    });
+  } else {
+    console.error('Not connected to the database');
+    event.reply('deleteQuery', null);
+  }
+});
+
 ipcMain.on('endQuery', (event, query) => {
   if (pool) {
     pool.query(query, (error, results) => {

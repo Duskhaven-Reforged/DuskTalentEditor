@@ -14,6 +14,7 @@ import PreReqModal from './PreReqModal';
 import { classLists } from './types/ClassList.type';
 import ChoiceNodeModal from './ChoiceNodeModal';
 import TooltipComponent from './shared/ToolTip';
+import DeleteModal from './DeleteModal';
 
 const TalentModal = (props: {
   forgeTalent: ForgeTalent | undefined;
@@ -29,6 +30,7 @@ const TalentModal = (props: {
   const [changes, setChanges] = useState<Record<string, number>>({});
   const [isSpellIdChanged, setIsSpellIdChanged] = useState(false);
   const [isOtherFieldsBlocked, setIsOtherFieldsBlocked] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
   const { class: className } = useParams();
 
   useEffect(() => {
@@ -89,6 +91,7 @@ const TalentModal = (props: {
         props.forgeTalent.trueNodeIndex &&
         props.forgeTalent.trueNodeIndex != props.forgeTalent.nodeindex
       ) {
+        console.log('CAUGHT NEW NODE INDEX QUERY');
         props.setNodeIndexQueries((prev) => [
           ...prev,
           `UPDATE forge_talents SET nodeIndex = ${props.forgeTalent?.trueNodeIndex} WHERE spellid = ${props.forgeTalent?.spellid} AND talentTabId = ${className}`,
@@ -145,7 +148,7 @@ const TalentModal = (props: {
         numberRanks: 0,
         preReqType: 1,
         tabPointReq: tabPointReq,
-        nodeType: 0,
+        nodeType: '',
         nodeindex: 0,
         spellid: 0,
       });
@@ -185,10 +188,6 @@ const TalentModal = (props: {
   useEffect(() => {
     handleSql();
   }, [changes]);
-
-  useEffect(() => {
-    console.log('SQL = ' + sql);
-  }, [sql]);
 
   const openModal = () => {
     setModalIsOpen(true);
@@ -298,6 +297,11 @@ const TalentModal = (props: {
     });
   });
 
+  const openDeleteModal = (event: React.MouseEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    setDeleteModal(true);
+  };
+
   const fieldInfo = {
     spellID: 'The ID of the Spell you want as the Talent',
     numberRanks: 'How many ranks of this talent are available? - Min: 1 Max: 2',
@@ -320,6 +324,14 @@ const TalentModal = (props: {
 
   return (
     <div className="talentWrapper">
+      {props.forgeTalent && (
+        <DeleteModal
+          spellID={props.forgeTalent.spellid}
+          setUpdater={props.setUpdater}
+          setModal={setDeleteModal}
+          isOpen={deleteModal}
+        />
+      )}
       <Modal
         isOpen={modalIsOpen}
         onRequestClose={closeModal}
@@ -374,6 +386,7 @@ const TalentModal = (props: {
               value={talent.nodeindex}
               min={0}
               max={121}
+              disabled={true}
             />
           </label>
           <label>
@@ -520,7 +533,9 @@ const TalentModal = (props: {
         </form>
       </Modal>
       {props.forgeTalent ? (
-        <div onClick={openModal}>{props.forgeTalent.spellid}</div>
+        <div onClick={openModal} onContextMenu={openDeleteModal}>
+          {props.forgeTalent.spellid}
+        </div>
       ) : (
         <div onClick={openModal}>+</div>
       )}
