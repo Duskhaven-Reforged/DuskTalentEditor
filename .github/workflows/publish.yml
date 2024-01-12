@@ -33,6 +33,11 @@ jobs:
           npm run postinstall
           npm run build
 
+      - name: Get version from package.json
+        id: get_version
+        run: |
+          echo "::set-output name=version::$(node -p "require('./release/app/package.json').version")"
+
       - name: Publish releases
         env:
           # These values are used for auto updates signing
@@ -50,6 +55,6 @@ jobs:
           repo_token: '${{ secrets.GH_TOKEN }}'
           automatic_release_tag: 'latest'
           prerelease: false
-          title: 'Development Build'
+          title: 'Release ${{ steps.get_version.outputs.version }}'
           files: |
             ./release/build/*.exe
