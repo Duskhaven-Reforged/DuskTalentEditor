@@ -45,36 +45,11 @@ jobs:
         run: |
           npm exec electron-builder -- --publish never --win portable
 
-      - name: Extract Version Number
-        id: extract_version
-        run: |
-          VERSION=$(ls ./dist/*.exe | grep -oP '\d+\.\d+\.\d+')
-          echo "::set-output name=version::$VERSION"
-
-      - name: Create Draft Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      - uses: 'marvinpinto/action-automatic-releases@latest'
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: true
+          repo_token: '${{ secrets.GITHUB_TOKEN }}'
+          automatic_release_tag: 'latest'
           prerelease: false
-
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release/build/DuskTalentEditor ${{ steps.extract_version.outputs.version }}.exe # Replace with the actual path to the .exe file
-          asset_name: DuskTalentEditor ${{ steps.extract_version.outputs.version }}.exe # Replace with the actual .exe file name
-          asset_content_type: application/vnd.microsoft.portable-executable
-
-      - name: Publish Release
-        uses: eregon/publish-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        with:
-          release_id: ${{ steps.create_release.outputs.id }}
+          title: 'Development Build'
+          files: |
+            *.exe
