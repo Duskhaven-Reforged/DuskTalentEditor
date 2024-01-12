@@ -45,6 +45,12 @@ jobs:
         run: |
           npm exec electron-builder -- --publish never --win portable
 
+      - name: Extract Version Number
+        id: extract_version
+        run: |
+          VERSION=$(ls ./dist/*.exe | grep -oP '\d+\.\d+\.\d+')
+          echo "::set-output name=version::$VERSION"
+
       - name: Create Draft Release
         id: create_release
         uses: actions/create-release@v1
@@ -62,8 +68,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./release/build/DuskTalentEditor*.exe # Replace with the actual path to the .exe file
-          asset_name: DuskTalentEditor*.exe # Replace with the actual .exe file name
+          asset_path: ./release/build/DuskTalentEditor ${{ steps.extract_version.outputs.version }}.exe # Replace with the actual path to the .exe file
+          asset_name: DuskTalentEditor ${{ steps.extract_version.outputs.version }}.exe # Replace with the actual .exe file name
           asset_content_type: application/vnd.microsoft.portable-executable
 
       - name: Publish Release
