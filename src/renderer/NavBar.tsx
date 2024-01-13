@@ -36,6 +36,7 @@ const images = {
 };
 
 function NavBar() {
+  const [currentSpecID, setCurrentSpecID] = useState<string | null>(null);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [selectedValues, setSelectedValues] = useState<
     { specID: string; name: string }[] | null
@@ -60,6 +61,7 @@ function NavBar() {
 
   const handleValueClick = (value: { specID: string; name: string }): void => {
     console.log('NAVIGATE VALUE CLICK');
+    setCurrentSpecID(value.specID);
     navigate(`/talentEditor/${value.specID}`);
   };
 
@@ -78,8 +80,10 @@ function NavBar() {
               {selectedValues?.map((value) => (
                 <button
                   key={value.specID}
-                  className="navbar-sub-item"
-                  onClick={() => handleValueClick(value)} // Changed to onMouseEnter
+                  className={`navbar-sub-item ${
+                    currentSpecID === value.specID ? 'selected-spec' : ''
+                  }`}
+                  onClick={() => handleValueClick(value)}
                 >
                   {value.name}
                 </button>
