@@ -149,7 +149,7 @@ const RanksModal = (props: {
           if (response && response !== 'Success') {
             console.error('Error executing query:', response);
             toast.error(`Error executing query`, { toastId: 'errorToast' });
-            reject(new Error(response));
+            reject(new Error(`${response}`));
           } else {
             console.log('Query executed successfully');
             resolve();
