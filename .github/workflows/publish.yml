@@ -94,7 +94,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          npm exec electron-builder -- --publish never --win portable --config ./win7/config.yml
+          npm exec electron-builder -- --publish never --win portable
 
       - uses: 'marvinpinto/action-automatic-releases@latest'
         with:
@@ -103,4 +103,4 @@ jobs:
           prerelease: false
           title: 'Release ${{ steps.get_version.outputs.version }} WIN7'
           files: |
-            ./dist/win7/*.exe
+            ./release/build/*.exe
