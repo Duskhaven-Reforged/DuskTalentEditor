@@ -21,7 +21,10 @@ const TalentModal = (props: {
   setUpdater: React.Dispatch<React.SetStateAction<boolean>>;
   row: number;
   column: number;
-  setNodeIndexQueries: React.Dispatch<React.SetStateAction<string[]>>;
+  setNodeIndexQueries: React.Dispatch<
+    React.SetStateAction<Record<number, string>>
+  >;
+  nodeIndexQueries: Record<number, string>;
 }) => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [talent, setTalent] = useState<ForgeTalent>({} as ForgeTalent);
@@ -31,6 +34,7 @@ const TalentModal = (props: {
   const [isSpellIdChanged, setIsSpellIdChanged] = useState(false);
   const [isOtherFieldsBlocked, setIsOtherFieldsBlocked] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
+  const [rankSQL, setRankSQL] = useState<string>('');
   const { class: className } = useParams();
 
   useEffect(() => {
@@ -89,13 +93,17 @@ const TalentModal = (props: {
 
       if (
         props.forgeTalent.trueNodeIndex &&
-        props.forgeTalent.trueNodeIndex != props.forgeTalent.nodeindex
+        props.forgeTalent.trueNodeIndex != props.forgeTalent.nodeindex &&
+        Object.keys(props.nodeIndexQueries).includes(
+          props.forgeTalent.spellid.toString(),
+        ) !== true
       ) {
         console.log('CAUGHT NEW NODE INDEX QUERY');
-        props.setNodeIndexQueries((prev) => [
+        props.setNodeIndexQueries((prev) => ({
           ...prev,
-          `UPDATE forge_talents SET nodeIndex = ${props.forgeTalent?.trueNodeIndex} WHERE spellid = ${props.forgeTalent?.spellid} AND talentTabId = ${className}`,
-        ]);
+          [props.forgeTalent?.spellid!]:
+            `UPDATE forge_talents SET nodeIndex = ${props.forgeTalent?.trueNodeIndex} WHERE spellid = ${props.forgeTalent?.spellid} AND talentTabId = ${className}`,
+        }));
       }
 
       // Update talent state with new data
@@ -187,6 +195,7 @@ const TalentModal = (props: {
 
   useEffect(() => {
     handleSql();
+    handleRankSQL();
   }, [changes]);
 
   const openModal = () => {
@@ -240,6 +249,16 @@ const TalentModal = (props: {
     setSql(sql);
   };
 
+  const handleRankSQL = () => {
+    if (!props.forgeTalent) {
+      setRankSQL(
+        `INSERT INTO forge_talent_ranks (talentSpellId, talentTabId, rank, spellid) VALUES (${talent.spellid}, ${className}, 1, ${talent.spellid});`,
+      );
+    } else {
+      setRankSQL('');
+    }
+  };
+
   const handleChange = (
     event: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>,
   ) => {
@@ -283,6 +302,10 @@ const TalentModal = (props: {
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     window.electron.ipcRenderer.sendMessage('endQuery', sql);
+    if (rankSQL !== '') {
+      window.electron.ipcRenderer.sendMessage('ranksEndQuery', rankSQL);
+    }
+
     props.setUpdater((prev) => !prev);
   };
 
@@ -529,6 +552,14 @@ const TalentModal = (props: {
             setUpdater={props.setUpdater}
           />
           <Code text={sql} language={`sql`} wrapLongLines theme={atomOneDark} />
+          {rankSQL !== '' && (
+            <Code
+              text={rankSQL}
+              language={`sql`}
+              wrapLongLines
+              theme={atomOneDark}
+            />
+          )}
           <button type="submit">Submit</button>
         </form>
       </Modal>

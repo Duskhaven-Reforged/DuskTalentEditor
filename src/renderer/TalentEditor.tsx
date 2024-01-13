@@ -28,7 +28,9 @@ const TalentEditor = () => {
   const [talents, setTalents] = useState<ForgeTalent[]>([]);
   const [sortedTalents, setSortedTalents] = useState<ForgeTalent[]>([]);
   const [updater, setUpdater] = useState(false);
-  const [nodeIndexQueries, setNodeIndexQueries] = useState<string[]>([]);
+  const [nodeIndexQueries, setNodeIndexQueries] = useState<
+    Record<number, string>
+  >({});
   const [nodeModal, setNodeModal] = useState(false);
 
   const handleDragStart = (
@@ -103,7 +105,7 @@ const TalentEditor = () => {
   }, []);
 
   useEffect(() => {
-    if (nodeIndexQueries.length > 0) {
+    if (Object.keys(nodeIndexQueries).length > 0) {
       setNodeModal(true);
     }
   }, [nodeIndexQueries]);
@@ -121,7 +123,8 @@ const TalentEditor = () => {
   }, [className]);
 
   useEffect(() => {
-    console.log("SORTING STARTED")
+    console.log('SORTING STARTED');
+    setNodeIndexQueries({});
     // Create a copy of the talents array
     let sortedTalents = [...talents];
 
@@ -175,12 +178,14 @@ const TalentEditor = () => {
 
   useEffect(() => {
     console.log('UPDATER CHANGED');
+
     loadTalents();
     refreshTalents();
   }, [updater]);
 
   const renderTalent = (row: number, column: number) => {
     const talent = findTalent(row, column);
+    const r = Math.floor(Math.random() * 399) + 1;
 
     return (
       <TalentModal
@@ -189,7 +194,8 @@ const TalentEditor = () => {
         row={row}
         column={column}
         setNodeIndexQueries={setNodeIndexQueries}
-        key={`${row}${column}`}
+        nodeIndexQueries={nodeIndexQueries}
+        key={`${row}${column} ${r}`}
       />
     );
   };

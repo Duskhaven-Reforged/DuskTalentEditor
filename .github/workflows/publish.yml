@@ -58,3 +58,49 @@ jobs:
           title: 'Release ${{ steps.get_version.outputs.version }}'
           files: |
             ./release/build/*.exe
+
+  publish_windows7:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-latest]
+
+    steps:
+      - name: Checkout git repo
+        uses: actions/checkout@v3
+
+      - name: Install Node and NPM
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: npm
+
+      - name: Install specific version of Electron
+        run: npm install electron@22
+
+      - name: Install and build
+        run: |
+          npm install
+          npm run postinstall
+          npm run build
+
+      - name: Get version from package.json
+        id: get_version
+        run: |
+          echo "::set-output name=version::$(node -p "require('./release/app/package.json').version")"
+
+      - name: Publish releases
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          npm exec electron-builder -- --publish never --win portable --outDir ./dist/win7
+
+      - uses: 'marvinpinto/action-automatic-releases@latest'
+        with:
+          repo_token: '${{ secrets.GH_TOKEN }}'
+          automatic_release_tag: 'latest'
+          prerelease: false
+          title: 'Release ${{ steps.get_version.outputs.version }} WIN7'
+          files: |
+            ./dist/win7/*.exe

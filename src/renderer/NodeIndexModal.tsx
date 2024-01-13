@@ -9,7 +9,7 @@ import { useParams } from 'react-router-dom';
 import { ForgeTalent } from './types/Forge_Talent.type';
 
 const NodeIndexModal = (props: {
-  sqlQueries: string[];
+  sqlQueries: Record<number, string>;
   setUpdater: React.Dispatch<React.SetStateAction<boolean>>;
   setModal: React.Dispatch<boolean>;
   isOpen: boolean;
@@ -28,54 +28,22 @@ const NodeIndexModal = (props: {
   };
 
   async function handleSubmit(event: React.FormEvent) {
-    for (let sql of props.sqlQueries) {
+    for (let keys of Object.keys(props.sqlQueries)) {
+      let sql = props.sqlQueries[parseInt(keys)];
       await new Promise<void>((resolve, reject) => {
         window.electron.ipcRenderer.sendMessage('nodeEndQuery', sql);
         window.electron.ipcRenderer.once(
           'nodeEndQuery',
           (event: any, args: any) => {
-            if (typeof event !== 'string') {
-              resolve();
-            } else {
-              reject(event);
-            }
+            resolve();
           },
         );
       });
     }
     props.setUpdater((prev) => !prev);
+    console.log('CHANGED UPDATER FROM NODE INDEX');
     closeModal();
   }
-
-  // function handleSubmit(event: React.FormEvent) {
-  //   props.sqlQueries.forEach((sql) => {
-  //     window.electron.ipcRenderer.sendMessage('nodeEndQuery', sql);
-  //   });
-  // }
-
-  // useEffect(() => {
-  //   const handlepreReqEndQuery = (event: any, args: any) => {
-  //     console.log(event);
-  //     if (typeof event !== 'string') {
-  //       toast('Executed Successfully', { toastId: 'successToast' });
-  //       // props.loadTalents();
-
-  //       props.setUpdater((prev) => !prev);
-  //       closeModal();
-  //     } else {
-  //       toast(event, { toastId: 'successToast' });
-  //     }
-  //   };
-
-  //   window.electron.ipcRenderer.once('nodeEndQuery', handlepreReqEndQuery);
-
-  //   return () => {
-  //     window.electron.ipcRenderer.removeListener(
-  //       'nodeEndQuery',
-  //       handlepreReqEndQuery,
-  //     );
-  //   };
-  // }, []);
 
   return (
     <div className="NodeIndexModal">
@@ -88,10 +56,10 @@ const NodeIndexModal = (props: {
         <form onSubmit={handleSubmit} className="preReqWrap ">
           <h4>Node Index Update Confirmation</h4>
           <div className="codeBlocks nodeBlocks">
-            {Array.from({ length: props.sqlQueries.length }).map((_, index) => {
+            {Object.entries(props.sqlQueries).map(([key, value]) => {
               return (
                 <Code
-                  text={props.sqlQueries[index]}
+                  text={value}
                   language="sql"
                   theme={atomOneDark}
                   customStyle={{ fontSize: '12px' }}
