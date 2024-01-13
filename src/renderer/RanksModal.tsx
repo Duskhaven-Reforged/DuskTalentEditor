@@ -6,6 +6,7 @@ import { Code, atomOneDark } from 'react-code-blocks';
 import { toast } from 'react-toastify';
 import { DBRanks } from './types/DB_Ranks.type';
 import { useParams } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 
 const RanksModal = (props: {
   spellid: number;
@@ -92,23 +93,29 @@ const RanksModal = (props: {
           sqlQuery = `UPDATE forge_talent_ranks SET ${updateClause} WHERE spellid = ${dbRank[index].spellId};`;
         }
       } else {
-        sqlQuery = `INSERT INTO forge_talent_ranks (talentSpellId, talentTabId, rank, spellid) VALUES (${rankItem.talentSpellId}, ${rankItem.talentTabId}, ${rankItem.rank}, ${rankItem.spellId});`;
+        sqlQuery = `INSERT INTO forge_talent_ranks (talentSpellId, talentTabId, \`rank\`, spellid) VALUES (${rankItem.talentSpellId}, ${rankItem.talentTabId}, ${rankItem.rank}, ${rankItem.spellId});`;
       }
       if (sqlQuery) {
         sqlQueries.push(sqlQuery);
       }
     });
     // Add DELETE queries for items that are in dbRank but not in rank
-    dbRank.forEach((dbRankItem, index) => {
-      if (!rank[index]) {
+    dbRank.forEach((dbRankItem) => {
+      const existsInRank = rank.find(
+        (rankItem) =>
+          rankItem.rank === dbRankItem.rank &&
+          rankItem.talentTabId === dbRankItem.talentTabId &&
+          rankItem.spellId === dbRankItem.spellId,
+      );
+      if (!existsInRank) {
         sqlQueries.push(
-          `DELETE FROM forge_talent_prereq WHERE rank = ${dbRankItem.rank};`,
+          `DELETE FROM forge_talent_ranks WHERE talentSpellId = ${dbRankItem.talentSpellId} AND \`rank\` = ${dbRankItem.rank} AND talentTabId = ${dbRankItem.talentTabId} AND spellId = ${dbRankItem.spellId};`,
         );
       }
     });
+
     setSqlQueries(sqlQueries);
   };
-
   useEffect(() => {
     generateSqlQueries();
   }, [rank, dbRank]);
@@ -124,8 +131,6 @@ const RanksModal = (props: {
     setRank(newRank);
   };
 
-  useEffect(() => {});
-
   useEffect(() => {
     window.electron.ipcRenderer.sendMessage(
       'ranksQuery',
@@ -136,34 +141,37 @@ const RanksModal = (props: {
   function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
-    sqlQueries.forEach((sql) => {
-      window.electron.ipcRenderer.sendMessage('ranksQuery', sql);
+    let promises = sqlQueries.map((sql) => {
+      return new Promise<void>((resolve, reject) => {
+        console.log(`Sending SQL: ${sql}`);
+
+        window.electron.ipcRenderer.once('ranksQuery', (_event, response) => {
+          if (response && response !== 'Success') {
+            console.error('Error executing query:', response);
+            toast.error(`Error executing query`, { toastId: 'errorToast' });
+            reject(new Error(response));
+          } else {
+            console.log('Query executed successfully');
+            resolve();
+          }
+        });
+
+        window.electron.ipcRenderer.sendMessage('ranksQuery', sql);
+      });
     });
-  }
 
-  useEffect(() => {
-    const handleEndQuery = (event: any, args: any) => {
-      console.log(event);
-      if (typeof event !== 'string') {
-        toast('Executed Successfully', { toastId: 'successToast' });
-        // props.loadTalents();
-
+    Promise.all(promises)
+      .then(() => {
+        toast.success('All queries executed successfully', {
+          toastId: 'successToast',
+        });
         props.setUpdater((prev) => !prev);
         closeModal();
-      } else {
-        toast(event, { toastId: 'successToast' });
-      }
-    };
-
-    window.electron.ipcRenderer.once('ranksEndQuery', handleEndQuery);
-
-    return () => {
-      window.electron.ipcRenderer.removeListener(
-        'ranksEndQuery',
-        handleEndQuery,
-      );
-    };
-  }, []);
+      })
+      .catch((error) => {
+        toast.error(error.message, { toastId: 'errorToast' });
+      });
+  }
 
   return (
     <div className="talentWrapper">

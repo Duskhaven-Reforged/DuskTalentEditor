@@ -125,14 +125,17 @@ ipcMain.on('ranksQuery', (event, query) => {
     pool.query(query, (error, results) => {
       if (error) {
         console.error('Failed to execute query:', error);
-        event.reply('ranksQuery', null);
+        // Send back an error message string
+        event.reply('ranksQuery', error.message);
       } else {
-        event.reply('ranksQuery', results);
+        // Send back results or some success indicator
+        event.reply('ranksQuery', results || 'Success');
       }
     });
   } else {
     console.error('Not connected to the database');
-    event.reply('ranksQuery', null);
+    // Send back an error message string
+    event.reply('ranksQuery', 'Not connected to the database');
   }
 });
 
