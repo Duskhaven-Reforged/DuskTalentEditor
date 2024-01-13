@@ -3,3 +3,4 @@ directories:
   output: dist/win7
 win:
   target: portable
+  artifactName: ${productName}-${version}-WIN7-${arch}.${ext}
