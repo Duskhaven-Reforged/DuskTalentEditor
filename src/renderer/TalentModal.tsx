@@ -252,7 +252,7 @@ const TalentModal = (props: {
   const handleRankSQL = () => {
     if (!props.forgeTalent) {
       setRankSQL(
-        `INSERT INTO forge_talent_ranks (talentSpellId, talentTabId, rank, spellid) VALUES (${talent.spellid}, ${className}, 1, ${talent.spellid});`,
+        `INSERT INTO forge_talent_ranks (talentSpellId, talentTabId, \`rank\`, spellid) VALUES (${talent.spellid}, ${className}, 1, ${talent.spellid});`,
       );
     } else {
       setRankSQL('');

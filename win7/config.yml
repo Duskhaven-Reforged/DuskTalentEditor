@@ -1,0 +1,5 @@
+appId: com.duskhaven.talenteditor
+directories:
+  output: dist/win7
+win:
+  target: portable
