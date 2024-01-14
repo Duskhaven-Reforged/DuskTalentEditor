@@ -37,7 +37,6 @@ body {
 }
 
 button {
-  background-color: white;
   padding: 10px 20px;
   border-radius: 10px;
   border: none;
@@ -49,6 +48,8 @@ button {
   transition: all ease-in 0.1s;
   cursor: pointer;
   opacity: 0.9;
+  color: white;
+  background-color: rgb(50, 135, 247);
 }
 
 button:hover {

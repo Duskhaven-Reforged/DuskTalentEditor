@@ -12,7 +12,7 @@ export default function App() {
   return (
     <Router>
       <div className="titleBar">
-        <h1>DuskTalentEditor</h1>
+        <h1>DuskhavenTalentEditor</h1>
       </div>
       {isConnected ? <NavBar /> : <></>}
       <Routes>

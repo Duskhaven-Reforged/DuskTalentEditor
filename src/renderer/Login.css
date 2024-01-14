@@ -14,13 +14,14 @@
     display: flex;
     flex-direction: column;
     height: 40%;
-    width: 60%;
-    background: #232323;
+    width: 20%;
     justify-content: space-around;
     padding: 20px 30px;
     border: 1px solid #f8f8f825;
     border-radius: 10px;
     align-items: center;
+    background-color: #131325;
+    background-image: url('https://s3-us-west-2.amazonaws.com/s.cdpn.io/1462889/pat.svg');
 
     input {
       border-radius: 5px;
