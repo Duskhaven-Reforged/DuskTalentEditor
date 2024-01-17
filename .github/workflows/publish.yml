@@ -55,7 +55,7 @@ jobs:
           repo_token: '${{ secrets.GH_TOKEN }}'
           automatic_release_tag: 'latest'
           prerelease: false
-          title: 'Release'
+          title: 'Release ${{ steps.get_version.outputs.version }}'
           files: |
             ./release/build/*.exe
 
