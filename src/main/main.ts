@@ -187,6 +187,38 @@ ipcMain.on('preReqQuery', (event, query) => {
   }
 });
 
+ipcMain.on('choiceQuery', (event, query) => {
+  if (pool) {
+    pool.query(query, (error, results) => {
+      if (error) {
+        console.error('Failed to execute query:', error);
+        event.reply('choiceQuery', null);
+      } else {
+        event.reply('choiceQuery', results);
+      }
+    });
+  } else {
+    console.error('Not connected to the database');
+    event.reply('choiceQuery', null);
+  }
+});
+
+ipcMain.on('choiceEndQuery', (event, query) => {
+  if (pool) {
+    pool.query(query, (error, results) => {
+      if (error) {
+        console.error('Failed to execute query:', error);
+        event.reply('choiceEndQuery', null);
+      } else {
+        event.reply('choiceEndQuery', results);
+      }
+    });
+  } else {
+    console.error('Not connected to the database');
+    event.reply('chocieEndQuery', null);
+  }
+});
+
 ipcMain.on('preReqEndQuery', (event, query) => {
   if (pool) {
     pool.query(query, (error, results) => {

@@ -68,7 +68,7 @@ const PreReqModal = (props: {
       }
     };
 
-    window.electron.ipcRenderer.once('preReqQuery', handleGetPreReq);
+    window.electron.ipcRenderer.on('preReqQuery', handleGetPreReq);
 
     // Cleanup function
     return () => {

@@ -79,12 +79,12 @@ const ChoiceNodeModal = (props: {
       }
     };
 
-    window.electron.ipcRenderer.once('preReqQuery', handleGetPreReq);
+    window.electron.ipcRenderer.on('choiceQuery', handleGetPreReq);
 
     // Cleanup function
     return () => {
       window.electron.ipcRenderer.removeListener(
-        'preReqQuery',
+        'choiceQuery',
         handleGetPreReq,
       );
     };
@@ -143,7 +143,10 @@ const ChoiceNodeModal = (props: {
 
   useEffect(() => {
     window.electron.ipcRenderer.sendMessage(
-      'preReqQuery',
+      'choiceQuery',
+      `SELECT * FROM forge_talent_choice_nodes WHERE choiceNodeId = ${props.choiceNodeId}`,
+    );
+    console.log(
       `SELECT * FROM forge_talent_choice_nodes WHERE choiceNodeId = ${props.choiceNodeId}`,
     );
   }, [props.choiceNodeId]);
@@ -152,7 +155,7 @@ const ChoiceNodeModal = (props: {
     event.preventDefault();
 
     sqlQueries.forEach((sql) => {
-      window.electron.ipcRenderer.sendMessage('preReqEndQuery', sql);
+      window.electron.ipcRenderer.sendMessage('choiceEndQuery', sql);
     });
   }
 
@@ -170,11 +173,11 @@ const ChoiceNodeModal = (props: {
       }
     };
 
-    window.electron.ipcRenderer.once('preReqEndQuery', handlepreReqEndQuery);
+    window.electron.ipcRenderer.once('choiceEndQuery', handlepreReqEndQuery);
 
     return () => {
       window.electron.ipcRenderer.removeListener(
-        'preReqEndQuery',
+        'choiceEndQuery',
         handlepreReqEndQuery,
       );
     };
